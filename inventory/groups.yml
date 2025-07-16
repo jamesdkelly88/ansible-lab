@@ -1,0 +1,23 @@
+all:
+  children:
+    physical:
+      children:
+        wired:
+        wireless:
+    virtual:
+      children:
+        arm_vms:
+        gnome_vms:
+        hyperv_vms:
+        kubevirt_vms:
+        nested_vms:
+        openstack_vms:
+        proxmox_vms:
+        truenas_vms:
+        vmware_vms:
+        xen_vms:
+    ssh:
+    talos:
+    vyos:
+    winrm:
+    winssh:

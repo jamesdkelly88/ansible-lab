@@ -1,0 +1,9 @@
+- name: Install packages
+  ansible.builtin.apt:
+    pkg: "{{ pkg }}"
+    state: "{{ ansible_role_state }}"
+    update_cache: yes
+  become: true
+  with_items: "{{ packages['debian'] }}"
+  loop_control:
+    loop_var: pkg

@@ -1,0 +1,2 @@
+- name: Patching
+  ansible.builtin.include_tasks: "{{ patching_tasks }}"

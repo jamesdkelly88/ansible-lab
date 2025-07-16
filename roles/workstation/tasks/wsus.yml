@@ -1,0 +1,8 @@
+- name: Install packages
+  chocolatey.chocolatey.win_chocolatey:
+    name: "{{ pkg }}"
+    state: "{{ workstation_role_state }}"
+  become: true
+  with_items: "{{ packages['wsus'] }}"
+  loop_control:
+    loop_var: pkg

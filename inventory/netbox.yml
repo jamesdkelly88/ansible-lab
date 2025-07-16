@@ -1,0 +1,33 @@
+plugin: netbox.netbox.nb_inventory
+# api_endpoint: http://localhost:8080
+api_endpoint: https://netbox2.jk88.duckdns.org
+token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
+flatten_custom_fields: true
+group_names_raw: true
+interfaces: true
+validate_certs: false
+virtual_disks: true
+groups:
+# host type
+  wired: is_virtual == False and interfaces | rejectattr('enabled', 'equalto', False) | map(attribute="name") | select('regex', '^eth') | length > 0
+  wireless: is_virtual == False and interfaces | rejectattr('enabled', 'equalto', False) | map(attribute="name") | select('regex', '^wl') | length > 0
+  arm_vms: is_virtual == True and cluster == "LibVirt ARM"
+  gnome_vms: is_virtual == True and cluster == "Gnome Boxes"
+  hyperv_vms: is_virtual == True and cluster == "Hyper-V"
+  kubevirt_vms: is_virtual == True and cluster == "KubeVirt"
+  nested_vms: is_virtual == True and cluster == "Nested"
+  openstack_vms: is_virtual == True and cluster == "Openstack"
+  proxmox_vms: is_virtual == True and cluster == "Proxmox"
+  truenas_vms: is_virtual == True and cluster == "TrueNAS Scale"
+  vmware_vms: is_virtual == True and cluster == "ESXi"
+  xen_vms: is_virtual == True and cluster == "XCP-ng"
+# connection type
+  none: platform.name.startswith("Android") or platform.name.startswith("Bespoke") or platform.name.startswith("iOS")
+  ssh: not (platform.name.startswith("Android") or platform.name.startswith("Bespoke") or platform.name.startswith("iOS") or platform.name.startswith("Talos") or platform.name.startswith("VyOS") or platform.name.startswith("Windows"))
+  talos: platform.name.startswith("Talos")
+  vyos: platform.name.startswith("VyOS")
+  winssh: platform.name.startswith("Windows")
+query_filters:
+- status: active
+device_query_filters:
+- has_primary_ip: 'true'

@@ -1,0 +1,6 @@
+- name: Ansible packages
+  ansible.builtin.include_tasks: "{{ patching }}.yml"
+- name: Pip packages
+  ansible.builtin.include_tasks: "pip.yml"
+- name: Ansible Galaxy collections
+  ansible.builtin.include_tasks: "collections.yml"

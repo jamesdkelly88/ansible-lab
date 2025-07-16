@@ -1,0 +1,15 @@
+- name: Execute Single Role
+  hosts: "{{ target | lower }}"
+  gather_facts: no
+  ignore_unreachable: no
+  vars_prompt:
+    - name: target
+      prompt: Which host(s)?
+      private: false
+    - name: role
+      prompt: Which role?
+      private: false
+  tasks:
+  - name: Execute role
+    ansible.builtin.include_role:
+      name: "{{ role }}"

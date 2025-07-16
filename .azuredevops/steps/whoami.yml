@@ -1,0 +1,5 @@
+steps:
+- script: |
+    cat /etc/hostname
+    whoami
+  displayName: Hostname / Username

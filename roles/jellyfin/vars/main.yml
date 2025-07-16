@@ -1,0 +1,8 @@
+disk_label: ssd
+libraries:
+- films
+- tv
+media_root: /media/ssd
+minio_password: "{{ lookup('community.general.bitwarden_secrets_manager', '7972e855-15b7-4977-9bfe-b31c013011d9').value }}"
+minio_user: "{{ lookup('community.general.bitwarden_secrets_manager', '2d75194f-b220-4737-b26e-b31c0130079d').value }}"
+svc_user: jellyfin

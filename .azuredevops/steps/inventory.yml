@@ -1,0 +1,6 @@
+steps:
+- script: |
+    ansible-inventory --graph | grep $(ansible_host)
+  displayName: Check Inventory
+  env:
+    BWS_ACCESS_TOKEN: $(bitwarden_token)

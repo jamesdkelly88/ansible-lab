@@ -1,0 +1,25 @@
+headless_role_state: latest
+
+packages:
+  debian:
+  - acpi
+  - bc
+  - btop
+  - c3270
+  - cmatrix
+  - curl
+  - fortune
+  - gh
+  - git
+  - lazygit
+  - mc
+  - ncal
+  - ncdu
+  - network-manager
+  - postgresql-client
+  - smbclient
+  - tmux
+  - unzip
+  - vlock
+  - w3m
+  - wget

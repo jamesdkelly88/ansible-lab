@@ -1,0 +1,22 @@
+---
+packages:
+  wsus:
+  - 7zip.install
+  - brave
+  - caffeine
+  - gh
+  - git
+  - go-task
+  - microsoft-windows-terminal
+  - notepadplusplus
+  - powershell-core
+  - python
+  - tailscale
+  - treesizefree
+  - vscode
+  - vscode-drawio
+  - vscode-gitlens
+  - vscode-powershell
+  - vscode-yaml
+
+workstation_role_state: latest

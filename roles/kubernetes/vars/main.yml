@@ -1,0 +1,12 @@
+kubernetes_role_state: latest
+
+packages:
+  wsus:
+  - argocd-cli
+  - flux
+  - kind
+  - kubernetes-cli
+  - kubernetes-helm
+  - talosctl
+  - trivy
+  - vscode-kubernetes-tools

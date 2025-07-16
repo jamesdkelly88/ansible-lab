@@ -1,0 +1,7 @@
+- name: Run host-specific roles
+  include_role:
+    name: "{{ host_role }}"
+  with_items: "{{ ansible_roles | split('|') }}"
+  loop_control:
+    loop_var: host_role
+  when: ansible_roles != None

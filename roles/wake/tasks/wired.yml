@@ -1,0 +1,8 @@
+---
+- name: Wake On Lan
+  community.general.wakeonlan:
+    mac: "{{ mac_address }}"
+  delegate_to: localhost
+  with_items: "{{ wol_addresses }}"
+  loop_control:
+    loop_var: mac_address

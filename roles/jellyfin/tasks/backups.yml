@@ -1,0 +1,56 @@
+---
+- name: Install backup tools
+  ansible.builtin.apt:
+    update_cache: yes
+    pkg:
+    - awscli
+    - gzip
+    - tar
+    - tree
+  become: true
+
+- name: Create script folder
+  ansible.builtin.file:
+    path: "/home/{{ svc_user }}/backup"
+    state: directory
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+    mode: '1777'
+  become: true
+
+- name: Deploy backup script
+  ansible.builtin.copy:
+    src: "{{item}}"
+    dest: "/home/{{ svc_user }}/backup/{{ item }}"
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+    mode: '0700'
+  become: true
+  with_items:
+  - backup.sh
+
+- name: Deploy upload script
+  ansible.builtin.template:
+    src: upload.sh.j2
+    dest: "/home/{{ svc_user }}/backup/upload.sh"
+  become: true
+
+- name: Setup cron jobs
+  block:
+  - name: Take backup
+    ansible.builtin.cron:
+      name: jellyfin-backup
+      weekday: 7
+      hour: 3
+      minute: 0
+      user: "root"
+      job: /home/{{ svc_user }}/backup/create.sh
+  - name: Upload backup
+    ansible.builtin.cron:
+      name: jellyfin-upload
+      weekday: 7
+      hour: 21
+      minute: 15
+      user: "{{ svc_user }}"
+      job: /home/{{ svc_user }}/backup/upload.sh
+  become: true

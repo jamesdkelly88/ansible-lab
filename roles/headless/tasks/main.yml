@@ -1,0 +1,2 @@
+- name: Headless setup
+  ansible.builtin.include_tasks: "{{ patching }}.yml"

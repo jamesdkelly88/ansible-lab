@@ -1,0 +1,2 @@
+- name: Workstation Setup
+  ansible.builtin.include_tasks: "{{ patching }}.yml"

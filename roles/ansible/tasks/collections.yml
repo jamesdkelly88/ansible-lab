@@ -1,0 +1,9 @@
+- name: Install required ansible collections
+  ansible.builtin.command:
+    cmd: "ansible-galaxy collection install --force {{ item }}"
+  with_items: "{{ galaxy_collections }}" 
+  loop_control:
+    loop_var: item
+  register: galaxy
+  changed_when: '"installed successfully" in galaxy.stdout'
+  become: true

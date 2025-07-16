@@ -1,0 +1,58 @@
+ansible_role_state: latest
+
+galaxy_collections:
+- ansible.posix
+- ansible.windows
+- chocolatey.chocolatey
+- community.docker
+- community.general
+- community.postgresql
+- community.vmware
+- community.zabbix
+- google.cloud
+- kubernetes.core
+- netbox.netbox
+- vyos.vyos
+
+packages:
+  alpine:
+  - gcc
+  - git
+  - musl-dev
+  - postgresql-dev
+  - py3-pip
+  - python3-dev
+  - sshpass
+  debian:
+  - git
+  - python3-pip
+  - sshpass
+  arch:
+  - git
+  - python-pip
+  - python-setuptools
+  - sshpass
+
+pips:
+  all:
+  - ansible
+  - google-auth
+  - jmespath
+  - jsonpatch
+  - kubernetes
+  - paramiko
+  - proxmoxer
+  - psycopg2-binary
+  - pynetbox
+  - pypsexec
+  - pytz
+  - pyvmomi
+  - pyvim
+  - pywinrm
+  - pyyaml
+  # - requests
+  - XenAPI
+  - zabbix-api
+  alpine: []
+  debian: []
+  # - ansible-pylibssh

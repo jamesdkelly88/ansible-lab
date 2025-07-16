@@ -1,0 +1,4 @@
+---
+- name: Skip patching
+  ansible.builtin.debug:
+    msg: "{{ 'Patching is suppressed globally' if apply_updates == 'N' else 'Patching is suppressed for ' + patching }}"

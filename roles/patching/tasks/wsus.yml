@@ -1,0 +1,63 @@
+---
+- name: Set Windows Updates to manual
+  win_regedit:
+    path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
+    name: NoAutoUpdate
+    data: 1
+    type: dword
+    state: present
+  become: true
+# TODO: temp fix (https://github.com/ansible-collections/community.windows/issues/147)
+- name: Install Nuget Provider
+  ansible.windows.win_shell: Install-PackageProvider -Name Nuget -Force
+  become: true
+- name: Install PendingReboot module
+  community.windows.win_psmodule:
+    accept_license: true
+    name: PendingReboot
+    state: latest
+  become: true
+- name: Check for pending reboot
+  ansible.windows.win_shell: (Test-PendingReboot -SkipConfigurationManagerClientCheck).IsRebootPending
+  register: reboot_pending
+  changed_when: false
+- name: Reboot if required
+  ansible.windows.win_reboot:
+  when: reboot_pending.stdout == "True"
+- name: Windows Updates # needs jmespath
+  block:
+  - name: Check for updates
+    ansible.windows.win_updates:
+      category_names: '*'
+      state: searched
+      reject_list: "{{ windows_reject_list }}"
+    register: updates_found
+
+  - name: Updates found
+    debug:
+      msg: "Updates found: {{ updates_found.found_update_count }}"
+
+  - name: Download update
+    ansible.windows.win_updates:
+      accept_list:
+      - "{{ item | regex_search('KB\\d+') }}"
+      category_names: '*'
+      state: downloaded
+      reject_list: "{{ windows_reject_list }}"
+    loop: "{{ updates_found | community.general.json_query('updates.*.title') }}"
+
+  - name: Install update
+    ansible.windows.win_updates:
+      accept_list:
+      - "{{ item | regex_search('KB\\d+') }}"
+      category_names: '*'
+      state: installed
+      reject_list: "{{ windows_reject_list }}"
+      reboot: yes
+      reboot_timeout: 3600
+    loop: "{{ updates_found | community.general.json_query('updates.*.title') }}"
+  become: true
+
+- name: Chocolatey
+  ansible.builtin.include_tasks: "chocolatey.yml"
+  when: apply_updates == "Y" and patch['chocolatey'] == "Y"

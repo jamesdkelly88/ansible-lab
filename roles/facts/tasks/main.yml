@@ -1,0 +1,24 @@
+- name: Create output directories
+  ansible.builtin.file:
+    path: ./output/{{ item }}
+    state: directory
+  delegate_to: localhost
+  with_items:
+  - facts
+  - vars
+  run_once: true
+
+- name: Save vars to file
+  local_action:
+    module: copy
+    content: "{{ hostvars[inventory_hostname] |to_nice_json }}"
+    dest: ./output/vars/{{ inventory_hostname }}.json
+
+- name: Gather facts
+  ansible.builtin.gather_facts:
+
+- name: Save facts to file
+  local_action:
+    module: copy
+    content: "{{ ansible_facts |to_nice_json }}"
+    dest: ./output/facts/{{ inventory_hostname }}.json

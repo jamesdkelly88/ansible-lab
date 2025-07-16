@@ -1,0 +1,15 @@
+apply_updates: Y
+patch:
+  alpine: N
+  chocolatey: Y
+  debian: N
+  pihole: N
+  rhel: N
+  talos: N
+  wsus: Y
+  xen: N
+
+patching_tasks: "{{ 'suppress' if (apply_updates == 'N' or patch[patching] == 'N') else patching }}.yml"
+
+windows_reject_list:
+- KB4052623

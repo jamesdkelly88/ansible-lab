@@ -1,0 +1,32 @@
+---
+- name: Gather facts
+  ansible.builtin.gather_facts:
+- name: Install Jellyfin
+  block:
+  - name: Add Jellyfin repository
+    ansible.builtin.deb822_repository:
+      name: jellyfin
+      types: [deb]
+      uris: https://repo.jellyfin.org/debian
+      suites: "{{ ansible_facts['distribution_release'] }}"
+      components: main
+      signed_by: https://repo.jellyfin.org/jellyfin_team.gpg.key
+      state: present
+      enabled: true
+  - name: Install Jellyfin package
+    ansible.builtin.apt:
+      update_cache: yes
+      pkg:
+      - jellyfin
+  - name: Set folder ownership
+    ansible.builtin.file:
+      path: "/etc/jellyfin"
+      state: directory
+      owner: "{{ svc_user }}"
+      group: "adm"
+  - name: Enable service
+    ansible.builtin.service:
+      name: jellyfin
+      enabled: yes
+      state: started
+  become: true

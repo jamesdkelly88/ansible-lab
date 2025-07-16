@@ -1,0 +1,59 @@
+---
+- name: Ensure mount point exists
+  ansible.builtin.file:
+    path: "{{ media_root }}"
+    state: directory
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+  become: true
+
+- name: Check disk plugged in
+  ansible.builtin.stat:
+    path: "/dev/disk/by-label/{{ disk_label }}"
+  register: st
+- name: Fail if volume not found
+  ansible.builtin.fail:
+    msg: "Whoops! no disk"
+  when: st.stat.exists is false
+
+- name: Mount Disk
+  ansible.posix.mount:
+    path: "{{ media_root }}"
+    src: "LABEL={{ disk_label }}"
+    fstype: ext4
+    state: mounted
+  become: true
+
+- name: Install SMB packages
+  ansible.builtin.apt:
+    update_cache: yes
+    pkg:
+    - cifs-utils 
+    - samba 
+    - smbclient
+  become: true
+
+- name: Create Subdirectories
+  ansible.builtin.file:
+    path: "{{ media_root}}/{{ item }}"
+    state: directory
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+    mode: '1777'
+  become: true
+  with_items: "{{ libraries }}"
+
+- name: Deploy Samba Config
+  ansible.builtin.template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+  become: true
+  register: samba_config
+
+- name: Restart Samba
+  ansible.builtin.systemd:
+    state: restarted
+    daemon_reload: yes
+    name: smbd
+  become: true
+  when: samba_config.changed is true

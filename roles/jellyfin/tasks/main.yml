@@ -1,0 +1,8 @@
+---
+# mount 2nd disk
+- ansible.builtin.include_tasks: folders.yml
+- ansible.builtin.include_tasks: install.yml
+- ansible.builtin.include_tasks: backups.yml
+
+# config
+# ssl (for browsers)
