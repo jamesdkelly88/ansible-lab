@@ -8,13 +8,13 @@ schedules:
   displayName: 19:00 GMT
   branches:
     include:
-    - master
+    - main
   always: true
 - cron: 0 18 * 4-10 * # 19:00 BST (Apr-Oct)
   displayName: 19:00 BST
   branches:
     include:
-    - master
+    - main
   always: true
 
 # These schedules will trigger at 7pm each day except:
