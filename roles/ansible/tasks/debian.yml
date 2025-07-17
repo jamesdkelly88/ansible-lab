@@ -7,3 +7,6 @@
   with_items: "{{ packages['debian'] }}"
   loop_control:
     loop_var: pkg
+# TODO: install bws 
+# https://github.com/bitwarden/sdk-sm/releases/download/bws-v1.0.0/bws-x86_64-unknown-linux-gnu-1.0.0.zip
+# https://github.com/bitwarden/sdk-sm/releases/download/bws-v1.0.0/bws-aarch64-unknown-linux-gnu-1.0.0.zip
