@@ -7,6 +7,18 @@
   with_items: "{{ packages['debian'] }}"
   loop_control:
     loop_var: pkg
-# TODO: install bws 
-# https://github.com/bitwarden/sdk-sm/releases/download/bws-v1.0.0/bws-x86_64-unknown-linux-gnu-1.0.0.zip
-# https://github.com/bitwarden/sdk-sm/releases/download/bws-v1.0.0/bws-aarch64-unknown-linux-gnu-1.0.0.zip
+
+- name: Check architecture
+  ansible.builtin.setup:
+    filter:
+      - 'architecture'
+  when: ansible_architecture is undefined
+
+- name: Install BWS
+  ansible.builtin.unarchive:
+    src: "https://github.com/bitwarden/sdk-sm/releases/download/bws-v{{ bws_version }}/bws-{{ ansible_architecture }}-unknown-linux-gnu-{{ bws_version }}.zip"
+    dest: "/usr/local/bin/"
+    remote_src: yes
+  become: true
+  # https://github.com/bitwarden/sdk-sm/releases/download/bws-v1.0.0/bws-x86_64-unknown-linux-gnu-1.0.0.zip
+  # https://github.com/bitwarden/sdk-sm/releases/download/bws-v1.0.0/bws-aarch64-unknown-linux-gnu-1.0.0.zip

@@ -1,0 +1,44 @@
+- name: Check if Azure Devops agent installed
+  ansible.windows.win_stat:
+    path: "{{ ado_win_path }}"
+  register: ado_check
+
+- name: Create Azure Devops folder
+  ansible.builtin.win_file:
+    path: "{{ ado_win_path }}"
+    state: directory
+  when: not ado_check.stat.exists
+
+- name: Download Azure Devops Agent (Windows)
+  ansible.windows.win_get_url:
+    url: "https://download.agent.dev.azure.com/agent/{{ ado_agent_version }}/vsts-agent-win-x64-{{ ado_agent_version }}.zip"
+    dest: "{{ ado_win_path }}/agent.zip"
+  when: not ado_check.stat.exists
+
+- name: Unzip Azure Devops Agent (Windows)
+  community.windows.win_unzip:
+    src: "{{ ado_win_path }}/agent.zip"
+    dest: "{{ ado_win_path }}"
+    delete_archive: true
+  when: not ado_check.stat.exists
+
+- name: Install Azure Devops Agent (Windows)
+  ansible.windows.win_command:
+    argv:
+      - ./config.cmd
+      - --unattended
+      - --url 
+      - "{{ ado_url }}"
+      - --auth
+      - PAT
+      - --token
+      - "{{ ado_token }}"
+      - --pool
+      - "{{ ado_pool }}"
+      - --agent
+      - "{{ inventory_hostname | lower }}"
+      - --replace
+      - --runAsService
+    chdir: "{{ ado_win_path }}"
+  when: not ado_check.stat.exists
+  become: true

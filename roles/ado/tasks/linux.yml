@@ -1,0 +1,72 @@
+- name: Azure Agent Sudoers
+  ansible.builtin.copy:
+    content: "{{ ansible_user }} ALL=(ALL) NOPASSWD: ALL"
+    dest: /etc/sudoers.d/ado
+  become: true
+
+- name: Check if Azure Devops agent installed
+  stat:
+    path: "{{ ado_linux_path }}"
+  register: ado_check
+
+- name: Create Azure Devops folder
+  ansible.builtin.file:
+    path: "{{ ado_linux_path }}"
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    state: directory
+  become: true
+  when: not ado_check.stat.exists
+
+- name: Check architecture
+  ansible.builtin.setup:
+    filter:
+      - 'architecture'
+  when: not ado_check.stat.exists and ansible_architecture is undefined
+
+- name: Download Azure Devops Agent (Linux)
+  ansible.builtin.unarchive:
+    src: "https://download.agent.dev.azure.com/agent/{{ ado_agent_version }}/vsts-agent-linux-{{ 'arm64' if ansible_architecture == 'aarch64' else 'x64' }}-{{ ado_agent_version }}.tar.gz"
+    dest: "{{ ado_linux_path }}"
+    group: "{{ ansible_user }}"
+    owner: "{{ ansible_user }}"
+    remote_src: yes
+  become: true
+  when: not ado_check.stat.exists
+
+- name: Install Azure Devops Agent (Linux)
+  ansible.builtin.command:
+    argv:
+      - ./config.sh
+      - --unattended
+      - --url 
+      - "{{ ado_url }}"
+      - --auth
+      - PAT
+      - --token
+      - "{{ ado_token }}"
+      - --pool
+      - "{{ ado_pool }}"
+      - --agent
+      - "{{ inventory_hostname | lower }}"
+      - --replace
+    chdir: "{{ ado_linux_path }}"
+  when: not ado_check.stat.exists
+
+- name: Install Azure Devops Agent Service (Linux)
+  ansible.builtin.command:
+    argv:
+      - ./svc.sh 
+      - install
+    chdir: "{{ ado_linux_path }}"
+  become: true
+  when: not ado_check.stat.exists  
+
+- name: Start Azure Devops Agent Service (Linux)
+  ansible.builtin.command:
+    argv:
+      - ./svc.sh 
+      - start
+    chdir: "{{ ado_linux_path }}"
+  become: true
+  when: not ado_check.stat.exists
