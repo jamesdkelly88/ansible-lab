@@ -1,0 +1,51 @@
+parameters:
+- name: agent
+  type: string
+  default: default
+- name: playbook
+  type: string
+- name: arguments
+  type: string
+  default: ""
+- name: jobName
+  type: string
+  default: playbook
+- name: displayName
+  type: string
+  default: Run playbook
+- name: depends
+  type: object
+  default: []
+- name: condition
+  type: object
+  default: succeeded()
+- name: checkout
+  type: string
+  default: self
+- name: variables
+  type: object
+  default:
+  - group: ansible
+
+jobs:
+- job: ${{ parameters.jobName }}
+  displayName: ${{ parameters.displayName }}
+  dependsOn: ${{ parameters.depends }}
+  condition: ${{ parameters.condition }}
+  pool:
+    ${{ if eq(parameters.agent, 'default')}}:
+      name: default
+      demands:
+      - Agent.Name -equals $(ansible_host)
+    ${{ if ne(parameters.agent, 'default')}}:
+      name: default
+      demands:
+      - Agent.Name -equals ${{ parameters.agent }}
+  timeoutInMinutes: 600
+  variables: ${{ parameters.variables }}
+  steps:
+  - checkout: ${{ parameters.checkout }}
+  - template: ../steps/ansible-playbook.yml
+    parameters:
+      playbook: ${{ parameters.playbook }}
+      arguments: ${{ parameters.arguments }}

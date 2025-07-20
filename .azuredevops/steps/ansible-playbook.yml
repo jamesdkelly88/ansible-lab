@@ -1,0 +1,13 @@
+parameters:
+- name: playbook
+  type: string
+- name: arguments
+  type: string
+
+steps:
+- script: |
+    ansible-playbook ${{ parameters.playbook }}.yml ${{ parameters.arguments }}
+  displayName: Run ${{ parameters.playbook }} playbook
+  env:
+    ANSIBLE_FORCE_COLOR: 1
+    BWS_ACCESS_TOKEN: $(bitwarden_token)

@@ -1,0 +1,27 @@
+appendCommitMessageToRunName: false
+name: "manual_${{ parameters.target }}_${{ parameters.role }}_ ${{ parameters.agent }}_$(Date:yy.MM.dd).$(rev:rr)"
+pr: none
+trigger: none
+
+parameters:
+- name: target
+  displayName: Target Host
+  type: string
+- name: role
+  displayName: Ansible role
+  type: string
+  default: deploy
+- name: agent
+  displayName: Ansible runner
+  type: string
+  default: default
+
+variables:
+- group: ansible
+
+jobs:
+- template: /.azuredevops/jobs/run-playbook.yml
+  parameters:
+    agent: ${{ parameters.agent }}
+    playbook: single-role
+    arguments: "-e target=${{ parameters.target }} -e role=${{ parameters.role }}"
