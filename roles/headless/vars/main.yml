@@ -8,6 +8,7 @@ packages:
   - c3270
   - cmatrix
   - curl
+  - fbterm
   - fortune
   - gh
   - git
