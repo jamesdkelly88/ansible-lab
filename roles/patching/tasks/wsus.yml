@@ -1,4 +1,8 @@
 ---
+- name: Chocolatey
+  ansible.builtin.include_tasks: "chocolatey.yml"
+  when: apply_updates == "Y" and patch['chocolatey'] == "Y"
+
 - name: Set Windows Updates to manual
   win_regedit:
     path: HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate\AU
@@ -58,6 +62,3 @@
     loop: "{{ updates_found | community.general.json_query('updates.*.title') }}"
   become: true
 
-- name: Chocolatey
-  ansible.builtin.include_tasks: "chocolatey.yml"
-  when: apply_updates == "Y" and patch['chocolatey'] == "Y"
