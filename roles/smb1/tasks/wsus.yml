@@ -1,0 +1,9 @@
+- name: Enable SMB1 feature
+  ansible.windows.win_optional_feature:
+    name: SMB1Protocol
+    state: present
+  register: smb1
+
+- name: Reboot if SMB1 requires it
+  ansible.windows.win_reboot:
+  when: smb1.reboot_required

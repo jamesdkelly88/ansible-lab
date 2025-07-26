@@ -1,0 +1,2 @@
+- name: Enable SMB1
+  ansible.builtin.include_tasks: "{{ patching }}.yml"
