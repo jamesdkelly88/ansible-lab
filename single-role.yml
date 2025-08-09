@@ -1,3 +1,5 @@
+#!/usr/bin/env ansible-playbook
+
 - name: Execute Single Role
   hosts: "{{ target | lower }}"
   gather_facts: no
