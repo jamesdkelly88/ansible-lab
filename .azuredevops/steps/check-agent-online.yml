@@ -1,0 +1,48 @@
+#  Project Build Service permissions required:
+#  - Membership of Project Readers (which should have read on the pool at project & organization level through Project Valid Users)
+
+parameters:
+  pool:
+  agent:
+
+steps:
+- powershell: |
+    $PAT = "$(System.AccessToken)"
+    $Organization = "$(System.TeamFoundationCollectionUri)"
+    $Project = "$(System.TeamProject)"
+    $Pool = "${{ parameters.pool }}"
+    $Name = "${{ parameters.agent }}"
+
+    $credential = [Convert]::ToBase64String([System.Text.Encoding]::ASCII.GetBytes("user:$PAT"))
+
+    $params = @{
+        Headers = @{Authorization = "Basic $credential"}
+        ContentType = "application/json"
+        Method = "GET"
+    }
+
+    $queueEndpoint = "$($Organization)/$($Project)/_apis/distributedtask/queues?api-version=7.1"
+    $queues = Invoke-RestMethod -Uri $queueEndpoint @params
+    $pool_id = $queues.value.Where{ $_.name -eq $Pool}.pool.id
+    $agentEndpoint = "$($Organization)/_apis/distributedtask/pools/$pool_id/agents?api-version=7.1"
+    $agents = Invoke-RestMethod -Uri $agentEndpoint @params
+    $agent = $agents.value.Where{ $_.name -eq $Name }
+
+    if(-not $agent)
+    {
+        Write-Host "##vso[task.logissue type=error]Agent $($Name) not found in $($Pool)"
+        exit 1
+    }
+    if($agent.status -ne "online")
+    {
+        Write-Host "##vso[task.logissue type=error]Agent $($Name) in $($agent.status)"
+        exit 1
+    }
+    else 
+    {
+        Write-Host "Agent $($Name) in $($agent.status)"
+        exit 0
+    }
+
+  name: check
+  displayName: Check Agent Online

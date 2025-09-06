@@ -31,9 +31,20 @@ pool:
   - Agent.Name -equals $(ansible_host)
 
 jobs:
-- job: test
-  displayName: Test
-
+- job: msft
+  displayName: Check OnPrem Agent Online
+  pool:
+    vmImage: 'windows-latest'
+  steps:
+  - template: /.azuredevops/steps/check-agent-online.yml
+    parameters:
+      pool: default
+      agent: $(ansible_host)
+- job: onprem
+  displayName: Daily Test
+  dependsOn:
+  - msft
+  condition: and(not(failed()),not(canceled()))
   steps:
   - template: /.azuredevops/steps/whoami.yml
   - template: /.azuredevops/steps/inventory.yml
