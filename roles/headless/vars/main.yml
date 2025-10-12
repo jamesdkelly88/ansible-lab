@@ -12,6 +12,8 @@ packages:
   - fortune
   - gh
   - git
+  - golang
+  - golang-golang-x-tools
   - lazygit
   - mc
   - ncal
