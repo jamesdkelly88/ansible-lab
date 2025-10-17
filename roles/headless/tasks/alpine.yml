@@ -1,0 +1,46 @@
+- name: Install packages
+  community.general.apk:
+    name: "{{ pkg }}"
+    state: "{{ headless_role_state }}"
+    update_cache: yes
+  become: true
+  with_items: "{{ packages['alpine'] }}"
+  loop_control:
+    loop_var: pkg
+
+# https://dev.alpinelinux.org/~clandmeter/other/forum.alpinelinux.org/forum/general-discussion/alpine-inetd-setup.html
+
+- name: Inetd config
+  ansible.builtin.lineinfile:
+    path: /etc/inetd.conf
+    line: telnet stream tcp nowait root /usr/sbin/telnetd telnetd -i -l /bin/login
+    state: present
+    create: true
+  become: true
+
+- name: Create Telnet service
+  ansible.builtin.copy:
+    content: |
+      #!/sbin/openrc-run
+
+      name="busybox $RC_SVCNAME"
+      cfgfile="/etc/$RC_SVCNAME.conf"
+      command="/usr/sbin/$RC_SVCNAME"
+      pidfile="/run/$SVCNAME.pid"
+      command_background=true
+
+      depend() {
+              need net
+      }
+    dest: /etc/init.d/inetd
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Start Telnet service
+  ansible.builtin.service:
+    name: inetd
+    enabled: true
+    state: started
+  become: true

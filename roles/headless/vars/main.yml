@@ -1,6 +1,19 @@
 headless_role_state: latest
 
 packages:
+  alpine:
+  - busybox-extras
+  - cmatrix
+  - curl
+  - git
+  - github-cli
+  - go
+  - go-task
+  - nano
+  - powershell
+  - tailscale
+  - tmux
+  - wget
   debian:
   - acpi
   - bc
