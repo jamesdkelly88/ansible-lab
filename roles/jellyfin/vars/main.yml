@@ -1,5 +1,7 @@
 disk_label: ssd
 libraries:
+- cartoons
+- stopmotion
 - films
 - tv
 media_root: /media/ssd
