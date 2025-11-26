@@ -1,0 +1,122 @@
+#!/usr/bin/env ansible-playbook
+
+- name: Lookup test
+  hosts: localhost
+  gather_facts: no
+  ignore_unreachable: no
+
+  # https://github.com/netbox-community/ansible_modules/blob/devel/plugins/lookup/nb_lookup.py
+
+  vars:
+    netbox_token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
+
+  # - name: Test
+  #   ansible.builtin.debug:
+  #     var: netbox_token
+  tasks:
+  - name: Get Netbox data
+    ansible.builtin.set_fact:
+      netbox_devices:       "{{ query('netbox.netbox.nb_lookup', 'devices',
+                            api_endpoint='https://netbox2.jk88.duckdns.org/',
+                            validate_certs=false,
+                            token=netbox_token) }}"
+      netbox_interfaces:    "{{ query('netbox.netbox.nb_lookup', 'interfaces',
+                            api_endpoint='https://netbox2.jk88.duckdns.org/',
+                            validate_certs=false,
+                            token=netbox_token) }}"
+      netbox_ip_addresses: "{{ query('netbox.netbox.nb_lookup', 'ip-addresses',
+                            api_endpoint='https://netbox2.jk88.duckdns.org/',
+                            validate_certs=false,
+                            token=netbox_token) }}"
+
+  # - name: Test 2
+  #   ansible.builtin.debug:
+  #     var: netbox_devices
+
+  # - name: Test 3
+  #   ansible.builtin.debug:
+  #     var: netbox_interfaces
+
+  # - name: Test 4
+  #   ansible.builtin.debug:
+  #     var: netbox_ip_addresses
+
+  # - name: List devices
+  #   debug:
+  #     msg: "{{ netbox_devices | json_query('[*].value.name') }}"
+
+  # - name: Count devices
+  #   debug:
+  #     msg: "{{ netbox_devices | length }}"
+
+  # - name: Create output directories
+  #   ansible.builtin.file:
+  #     path: "./output/{{ item }}"
+  #     state: directory
+  #   with_items:
+  #   - devices
+  #   - interfaces
+
+  # - name: Save devices to file
+  #   local_action:
+  #     module: copy
+  #     content: "{{ item | to_nice_json }}"
+  #     dest: ./output/devices/{{ item.value.name }}.json
+  #   with_items: "{{ netbox_devices }}"
+  #   loop_control:
+  #     label: "{{ item.value.id }}"
+
+  # - name: Save interfaces to file
+  #   local_action:
+  #     module: copy
+  #     content: "{{ item | to_nice_json }}"
+  #     dest: ./output/interfaces/{{ item.key }}.json
+  #   with_items: "{{ netbox_interfaces }}"
+  #   loop_control:
+  #     label: "{{ item.key }}"
+
+
+  # - name: ip addresses
+  #   local_action:
+  #     module: copy
+  #     content: "{{ netbox_ip_addresses | to_nice_json }}"
+  #     dest: ./output/ip_addresses.json
+
+  # - name: interfaces
+  #   local_action:
+  #     module: copy
+  #     content: "{{ netbox_interfaces | to_nice_json }}"
+  #     dest: ./output/interfaces.json
+
+  # - name: devices
+  #   local_action:
+  #     module: copy
+  #     content: "{{ netbox_devices | to_nice_json }}"
+  #     dest: ./output/devices.json
+    
+  # - name: select device
+  #   ansible.builtin.debug:
+  #     msg: "{{ netbox_devices | selectattr('value.id','eq',4) | map(attribute='value.name') | list }}"
+
+  # - name: select interface
+  #   ansible.builtin.debug:
+  #     msg: "{{ netbox_interfaces | selectattr('value.device.id','eq',4) | map(attribute='value.mac_address') | list }}"
+
+  # - name: select ip
+  #   ansible.builtin.debug:
+  #     msg: "{{ netbox_ip_addresses | selectattr('value.assigned_object.device.id','eq',4) | map(attribute='value.mac_address') | list }}"
+
+  - name: dnsmasq
+    ansible.builtin.debug:
+      msg:
+      - "id: 3"
+      - "ip: {{ netbox_ip_addresses | selectattr('key','eq',3) | map(attribute='value.address') | first }}"
+      - "dev_id: {{ netbox_ip_addresses | selectattr('key','eq',3) | map(attribute='value.assigned_object.device.id') | first }}"
+      - "device: {{ netbox_ip_addresses | selectattr('key','eq',3) | map(attribute='value.assigned_object.device.display') | first }}"
+      - "if_id: {{ netbox_ip_addresses | selectattr('key','eq',3) | map(attribute='value.assigned_object.id') | first }}"
+      - "mac: {{ netbox_interfaces | selectattr('key','eq',netbox_ip_addresses | selectattr('key','eq',3) | map(attribute='value.assigned_object.id') | first ) | map(attribute='value.mac_address') | first }}"
+
+# TODO:
+# handle virtual machine
+# loop through all IP addresses
+# output all rows to 1 file (sorted by device name)
