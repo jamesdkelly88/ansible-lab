@@ -1,0 +1,48 @@
+#!/usr/bin/env ansible-playbook
+
+- name: Netbox DHCP Reservations
+  hosts: rp04
+  gather_facts: no
+  ignore_unreachable: no
+
+  # https://github.com/netbox-community/ansible_modules/blob/devel/plugins/lookup/nb_lookup.py
+
+  vars:
+    netbox_token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
+    output_file: /etc/dnsmasq.d/netbox
+  tasks:
+  - name: Get Netbox data
+    ansible.builtin.set_fact:
+      netbox_interfaces:     "{{ query('netbox.netbox.nb_lookup', 'interfaces',
+                             api_endpoint='https://netbox2.jk88.duckdns.org/',
+                             validate_certs=false,
+                             token=netbox_token) }}"
+      netbox_ip_addresses:  "{{ query('netbox.netbox.nb_lookup', 'ip-addresses',
+                             api_endpoint='https://netbox2.jk88.duckdns.org/',
+                             validate_certs=false,
+                             token=netbox_token) }}"
+      netbox_vm_interfaces: "{{ query('netbox.netbox.nb_lookup', 'virtualization-interfaces',
+                             api_endpoint='https://netbox2.jk88.duckdns.org/',
+                             validate_certs=false,
+                             token=netbox_token) }}"
+  - name: delete file
+    ansible.builtin.file:
+      path: "{{ output_file }}"
+      state: absent
+    become: true
+  - name: append to file
+    ansible.builtin.lineinfile:
+      path: "{{ output_file }}"
+      create: true
+      state: present
+      insertafter: EOF
+      line: "dhcp-host={{ ( netbox_vm_interfaces | selectattr('key','eq',item.value.assigned_object.id) | map(attribute='value.mac_address') | first ) if item.value.assigned_object.virtual_machine is defined else ( netbox_interfaces | selectattr('key','eq',item.value.assigned_object.id) | map(attribute='value.mac_address') | first ) }},{{ item.value.address | split('/') | first }},{{ item.value.assigned_object.virtual_machine.display if item.value.assigned_object.virtual_machine is defined else item.value.assigned_object.device.display }}"
+    with_items: "{{ netbox_ip_addresses }}"
+    loop_control:
+      label: "{{ item.value.address }}"
+    become: true
+  - name: Restart pihole
+    ansible.builtin.service:
+      state: restarted
+      name: pihole-FTL
+    become: true
