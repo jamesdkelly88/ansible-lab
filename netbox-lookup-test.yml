@@ -9,6 +9,7 @@
 
   vars:
     netbox_token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
+    ip_id: 44
 
   # - name: Test
   #   ansible.builtin.debug:
@@ -16,18 +17,26 @@
   tasks:
   - name: Get Netbox data
     ansible.builtin.set_fact:
-      netbox_devices:       "{{ query('netbox.netbox.nb_lookup', 'devices',
-                            api_endpoint='https://netbox2.jk88.duckdns.org/',
-                            validate_certs=false,
-                            token=netbox_token) }}"
-      netbox_interfaces:    "{{ query('netbox.netbox.nb_lookup', 'interfaces',
-                            api_endpoint='https://netbox2.jk88.duckdns.org/',
-                            validate_certs=false,
-                            token=netbox_token) }}"
-      netbox_ip_addresses: "{{ query('netbox.netbox.nb_lookup', 'ip-addresses',
-                            api_endpoint='https://netbox2.jk88.duckdns.org/',
-                            validate_certs=false,
-                            token=netbox_token) }}"
+      # netbox_devices:       "{{ query('netbox.netbox.nb_lookup', 'devices',
+      #                       api_endpoint='https://netbox2.jk88.duckdns.org/',
+      #                       validate_certs=false,
+      #                       token=netbox_token) }}"
+      netbox_interfaces:     "{{ query('netbox.netbox.nb_lookup', 'interfaces',
+                             api_endpoint='https://netbox2.jk88.duckdns.org/',
+                             validate_certs=false,
+                             token=netbox_token) }}"
+      netbox_ip_addresses:  "{{ query('netbox.netbox.nb_lookup', 'ip-addresses',
+                             api_endpoint='https://netbox2.jk88.duckdns.org/',
+                             validate_certs=false,
+                             token=netbox_token) }}"
+      # netbox_vms:          "{{ query('netbox.netbox.nb_lookup', 'virtual-machines',
+      #                       api_endpoint='https://netbox2.jk88.duckdns.org/',
+      #                       validate_certs=false,
+      #                       token=netbox_token) }}"
+      netbox_vm_interfaces: "{{ query('netbox.netbox.nb_lookup', 'virtualization-interfaces',
+                             api_endpoint='https://netbox2.jk88.duckdns.org/',
+                             validate_certs=false,
+                             token=netbox_token) }}"
 
   # - name: Test 2
   #   ansible.builtin.debug:
@@ -93,6 +102,18 @@
   #     module: copy
   #     content: "{{ netbox_devices | to_nice_json }}"
   #     dest: ./output/devices.json
+
+  # - name: vms
+  #   local_action:
+  #     module: copy
+  #     content: "{{ netbox_vms | to_nice_json }}"
+  #     dest: ./output/vms.json
+
+  # - name: vm_ifs
+  #   local_action:
+  #     module: copy
+  #     content: "{{ netbox_vm_if | to_nice_json }}"
+  #     dest: ./output/vm_ifs.json
     
   # - name: select device
   #   ansible.builtin.debug:
@@ -106,17 +127,49 @@
   #   ansible.builtin.debug:
   #     msg: "{{ netbox_ip_addresses | selectattr('value.assigned_object.device.id','eq',4) | map(attribute='value.mac_address') | list }}"
 
-  - name: dnsmasq
+  # - name: dnsmasq
+  #   ansible.builtin.debug:
+  #     msg:
+  #     - "id: {{ ip_id }}"
+  #     - "ip: {{ netbox_ip_addresses | selectattr('key','eq',ip_id) | map(attribute='value.address') | first }}"
+  #     # - "dev_id: {{ netbox_ip_addresses | selectattr('key','eq',ip_id) | map(attribute='value.assigned_object.device.id') | first }}"
+  #     # - "device: {{ netbox_ip_addresses | selectattr('key','eq',ip_id) | map(attribute='value.assigned_object.device.display') | first }}"
+  #     - "if_id: {{ netbox_ip_addresses | selectattr('key','eq',ip_id) | map(attribute='value.assigned_object.id') | first }}"
+  #     # - "mac: {{ netbox_interfaces | selectattr('key','eq',netbox_ip_addresses | selectattr('key','eq',ip_id) | map(attribute='value.assigned_object.id') | first ) | map(attribute='value.mac_address') | first }}"
+  #     - "vm_id: {{ netbox_ip_addresses | selectattr('key','eq',ip_id) | map(attribute='value.assigned_object.virtual_machine.id') | first }}"
+
+  - name: dnsmasq loop
     ansible.builtin.debug:
       msg:
-      - "id: 3"
-      - "ip: {{ netbox_ip_addresses | selectattr('key','eq',3) | map(attribute='value.address') | first }}"
-      - "dev_id: {{ netbox_ip_addresses | selectattr('key','eq',3) | map(attribute='value.assigned_object.device.id') | first }}"
-      - "device: {{ netbox_ip_addresses | selectattr('key','eq',3) | map(attribute='value.assigned_object.device.display') | first }}"
-      - "if_id: {{ netbox_ip_addresses | selectattr('key','eq',3) | map(attribute='value.assigned_object.id') | first }}"
-      - "mac: {{ netbox_interfaces | selectattr('key','eq',netbox_ip_addresses | selectattr('key','eq',3) | map(attribute='value.assigned_object.id') | first ) | map(attribute='value.mac_address') | first }}"
+      # - "id: {{ item.key }}"
+      # - "address: {{ item.value.address }}"
+      # - "type: {{ 'vm' if item.value.assigned_object.virtual_machine is defined else 'device' }}"
+      # - "host: {{ item.value.assigned_object.virtual_machine.display if item.value.assigned_object.virtual_machine is defined else item.value.assigned_object.device.display }}"
+      # - "interface: {{ item.value.assigned_object.id }}"
+      # - "mac: {{ ( netbox_vm_interfaces | selectattr('key','eq',item.value.assigned_object.id) | map(attribute='value.mac_address') | first ) if item.value.assigned_object.virtual_machine is defined else ( netbox_interfaces | selectattr('key','eq',item.value.assigned_object.id) | map(attribute='value.mac_address') | first ) }}"
+      - "dhcp-host={{ ( netbox_vm_interfaces | selectattr('key','eq',item.value.assigned_object.id) | map(attribute='value.mac_address') | first ) if item.value.assigned_object.virtual_machine is defined else ( netbox_interfaces | selectattr('key','eq',item.value.assigned_object.id) | map(attribute='value.mac_address') | first ) }},{{ item.value.address | split('/') | first }},{{ item.value.assigned_object.virtual_machine.display if item.value.assigned_object.virtual_machine is defined else item.value.assigned_object.device.display }}"
+    with_items: "{{ netbox_ip_addresses }}"
+    loop_control:
+      label: "{{ item.key }}"
+
+  - name: delete file
+    ansible.builtin.file:
+      path: ./output/dnsmasq.txt
+      state: absent
+
+  - name: append to file
+    ansible.builtin.lineinfile:
+      path: ./output/dnsmasq.txt
+      create: true
+      state: present
+      insertafter: EOF
+      line: "dhcp-host={{ ( netbox_vm_interfaces | selectattr('key','eq',item.value.assigned_object.id) | map(attribute='value.mac_address') | first ) if item.value.assigned_object.virtual_machine is defined else ( netbox_interfaces | selectattr('key','eq',item.value.assigned_object.id) | map(attribute='value.mac_address') | first ) }},{{ item.value.address | split('/') | first }},{{ item.value.assigned_object.virtual_machine.display if item.value.assigned_object.virtual_machine is defined else item.value.assigned_object.device.display }}"
+    with_items: "{{ netbox_ip_addresses }}"
+    loop_control:
+      label: "{{ item.key }}"
 
 # TODO:
 # handle virtual machine
 # loop through all IP addresses
 # output all rows to 1 file (sorted by device name)
+# file format: dhcp-host=<mac>,<ip>,<dns>
