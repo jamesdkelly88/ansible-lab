@@ -1,0 +1,12 @@
+appendCommitMessageToRunName: false
+name: "netbox_dhcp_$(Date:yy.MM.dd).$(rev:rr)"
+pr: none
+trigger: none
+
+variables:
+- group: ansible
+
+jobs:
+- template: /.azuredevops/jobs/run-playbook.yml
+  parameters:
+    playbook: netbox-dhcp
