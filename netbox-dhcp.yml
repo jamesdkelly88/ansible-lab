@@ -9,7 +9,7 @@
 
   vars:
     netbox_token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
-    output_file: /etc/dnsmasq.d/netbox
+    output_file: /etc/dnsmasq.d/netbox.conf
   tasks:
   - name: Get Netbox data
     ansible.builtin.set_fact:
