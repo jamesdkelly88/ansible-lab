@@ -9,10 +9,12 @@
 
   vars:
     netbox_token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
+    local_file: netbox.conf
     output_file: /etc/dnsmasq.d/netbox.conf
   tasks:
   - name: Get Netbox data
-    ansible.builtin.set_fact:
+    local_action:
+      module: ansible.builtin.set_fact
       netbox_interfaces:     "{{ query('netbox.netbox.nb_lookup', 'interfaces',
                              api_endpoint='https://netbox2.jk88.duckdns.org/',
                              validate_certs=false,
@@ -26,13 +28,14 @@
                              validate_certs=false,
                              token=netbox_token) }}"
   - name: delete file
-    ansible.builtin.file:
-      path: "{{ output_file }}"
+    local_action:
+      module: ansible.builtin.file
+      path: "{{ local_file }}"
       state: absent
-    become: true
   - name: append to file
-    ansible.builtin.lineinfile:
-      path: "{{ output_file }}"
+    local_action: 
+      module: ansible.builtin.lineinfile
+      path: "{{ local_file }}"
       create: true
       state: present
       insertafter: EOF
@@ -40,9 +43,15 @@
     with_items: "{{ netbox_ip_addresses }}"
     loop_control:
       label: "{{ item.value.address }}"
+  - name: Copy to host
+    ansible.builtin.copy:
+      src: "{{ local_file }}"
+      dest: "{{ output_file }}"
     become: true
+    register: update_config
   - name: Restart pihole
     ansible.builtin.service:
       state: restarted
       name: pihole-FTL
     become: true
+    when: update_config.changed is true
