@@ -1,0 +1,26 @@
+- name: Install packages
+  ansible.builtin.apt:
+    pkg: "{{ pkg }}"
+    state: "{{ telnet_role_state }}"
+    update_cache: yes
+  become: true
+  with_items: "{{ packages['debian'] }}"
+  loop_control:
+    loop_var: pkg
+
+- name: Inetd config
+  ansible.builtin.lineinfile:
+    path: /etc/inetd.conf
+    line: telnet  stream  tcp     nowait  root    /usr/sbin/tcpd  /usr/sbin/telnetd
+    state: present
+    create: true
+  become: true
+  register: inetd
+
+- name: Restart Telnet service
+  ansible.builtin.service:
+    name: inetd
+    enabled: true
+    state: restarted
+  become: true
+  when: inetd.changed is true

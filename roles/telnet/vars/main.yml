@@ -1,0 +1,7 @@
+telnet_role_state: latest
+
+packages:
+  alpine:
+  - busybox-extras
+  debian:
+  - telnetd

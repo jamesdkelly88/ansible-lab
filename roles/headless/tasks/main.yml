@@ -1,2 +1,13 @@
-- name: Headless setup
-  ansible.builtin.include_tasks: "{{ patching }}.yml"
+- name: Install packages
+  community.general.apk:
+    name: "{{ pkg }}"
+    state: "{{ headless_role_state }}"
+    update_cache: yes
+  become: true
+  with_items: "{{ packages[patching] }}"
+  loop_control:
+    loop_var: pkg
+
+# TODO: run task install helper script
+# TODO: run lazydocker install helper script
+# TODO: run bw install script

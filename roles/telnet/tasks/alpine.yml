@@ -1,7 +1,7 @@
 - name: Install packages
   community.general.apk:
     name: "{{ pkg }}"
-    state: "{{ headless_role_state }}"
+    state: "{{ telnet_role_state }}"
     update_cache: yes
   become: true
   with_items: "{{ packages['alpine'] }}"
