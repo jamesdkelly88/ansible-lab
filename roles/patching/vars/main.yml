@@ -2,7 +2,7 @@ apply_updates: Y
 patch:
   alpine: N
   chocolatey: Y
-  debian: N
+  debian: Y
   macports: Y
   pihole: N
   rhel: N

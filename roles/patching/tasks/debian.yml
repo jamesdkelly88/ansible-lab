@@ -1,0 +1,11 @@
+---
+- name: APT update
+  ansible.builtin.apt:
+    autoclean: yes
+    autoremove: yes
+    force_apt_get: yes
+    update_cache: yes
+    upgrade: full
+  become: true
+
+- ansible.builtin.include_tasks: "reboot.yml"

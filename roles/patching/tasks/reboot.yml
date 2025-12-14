@@ -1,0 +1,17 @@
+---
+- name: Check if reboot required (1/2)
+  stat:
+    path: /var/run/reboot-required
+  register: r1
+
+- name: Check if reboot required (2/2)
+  stat:
+    path: /var/run/do-not-hibernate
+  register: r2
+  when: not r1.stat.exists
+
+- name: Reboot
+  ansible.builtin.reboot:
+    reboot_timeout: 3600
+  when: r1.stat.exists or r2.stat.exists
+  become: true
