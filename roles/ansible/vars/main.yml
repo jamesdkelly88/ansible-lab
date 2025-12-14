@@ -24,15 +24,21 @@ packages:
   - py3-pip
   - python3-dev
   - sshpass
-  debian:
-  - git
-  - python3-pip
-  - sshpass
   arch:
   - git
   - python-pip
   - python-setuptools
   - sshpass
+  debian:
+  - git
+  - python3-pip
+  - sshpass
+  macports:
+  - ansible-lint
+  - python313
+  - py-ansible
+  - py-pip
+
 
 pips:
   all:
@@ -57,3 +63,4 @@ pips:
   alpine: []
   debian: []
   # - ansible-pylibssh
+  macports: []

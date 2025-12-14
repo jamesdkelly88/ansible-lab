@@ -1,0 +1,8 @@
+- name: Install packages
+  community.general.macports:
+    name: "{{ pkg }}"
+    update_cache: true
+  become: true
+  with_items: "{{ packages['macports'] }}"
+  loop_control:
+    loop_var: pkg
