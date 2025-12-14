@@ -1,0 +1,7 @@
+- name: Update Macports and the ports tree, then upgrade all outdated ports
+  community.general.macports:
+    selfupdate: true
+    upgrade: true
+  become: true
+
+# TODO: OS patching

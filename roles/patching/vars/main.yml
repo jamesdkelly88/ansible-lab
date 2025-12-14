@@ -3,6 +3,7 @@ patch:
   alpine: N
   chocolatey: Y
   debian: N
+  macports: Y
   pihole: N
   rhel: N
   talos: N
