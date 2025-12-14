@@ -4,3 +4,7 @@
   ansible.builtin.include_tasks: "pip.yml"
 - name: Ansible Galaxy collections
   ansible.builtin.include_tasks: "collections.yml"
+  when: patching != 'macports'
+
+# TODO: add step for installing bitwarden secrets manager CLI (bws)
+# curl https://bws.bitwarden.com/install | sh

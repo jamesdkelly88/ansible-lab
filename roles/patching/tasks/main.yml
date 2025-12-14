@@ -1,2 +1,26 @@
 - name: Patching
   ansible.builtin.include_tasks: "{{ patching_tasks }}"
+
+- name: Update Netbox (physical)
+  local_action:
+    module: netbox.netbox.netbox_device
+    netbox_url: "{{ netbox_endpoint }}"
+    netbox_token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
+    validate_certs: false
+    data:
+      name: "{{ inventory_hostname }}"
+      custom_fields:
+        last_patched: "{{ now(utc=false,fmt='%Y-%m-%d') }}"
+  when: is_virtual == False
+
+- name: Update Netbox (virtual)
+  local_action:
+    module: netbox.netbox.netbox_virtual_machine
+    netbox_url: "{{ netbox_endpoint }}"
+    netbox_token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
+    validate_certs: false
+    data:
+      name: "{{ inventory_hostname }}"
+      custom_fields:
+        last_patched: "{{ now(utc=false,fmt='%Y-%m-%d') }}"
+  when: is_virtual == True

@@ -16,15 +16,15 @@
     local_action:
       module: ansible.builtin.set_fact
       netbox_interfaces:     "{{ query('netbox.netbox.nb_lookup', 'interfaces',
-                             api_endpoint='https://netbox2.jk88.duckdns.org/',
+                             api_endpoint=netbox_endpoint,
                              validate_certs=false,
                              token=netbox_token) }}"
       netbox_ip_addresses:  "{{ query('netbox.netbox.nb_lookup', 'ip-addresses',
-                             api_endpoint='https://netbox2.jk88.duckdns.org/',
+                             api_endpoint=netbox_endpoint,
                              validate_certs=false,
                              token=netbox_token) }}"
       netbox_vm_interfaces: "{{ query('netbox.netbox.nb_lookup', 'virtualization-interfaces',
-                             api_endpoint='https://netbox2.jk88.duckdns.org/',
+                             api_endpoint=netbox_endpoint,
                              validate_certs=false,
                              token=netbox_token) }}"
   - name: delete file

@@ -27,6 +27,8 @@ groups:
   talos: platform.name.startswith("Talos")
   vyos: platform.name.startswith("VyOS")
   winssh: platform.name.startswith("Windows")
+# patching type
+  macports: patching == "macports"
 query_filters:
 - status: active
 device_query_filters:

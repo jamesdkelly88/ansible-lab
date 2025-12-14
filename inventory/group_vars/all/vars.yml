@@ -2,5 +2,6 @@ ansible_user: "{{ lookup('community.general.bitwarden_secrets_manager', '8123e7f
 ansible_password: "{{ lookup('community.general.bitwarden_secrets_manager', '3b936abc-897b-4399-995f-b31c0120a148').value }}"
 ansible_become_pass: "{{ ansible_password }}"
 device_mac_address: "{%for i in interfaces %}{{ i.primary_mac_address.mac_address if i.ip_addresses | selectattr('address','match',ansible_host) }}{% endfor %}"
+netbox_endpoint: "{{ lookup('community.general.bitwarden_secrets_manager', '981c75e5-a1cc-4c8e-96ae-b3b300a4bfc9').value }}"
 personal_user: "james"
 wol_addresses: "{{ interfaces | rejectattr('enabled', 'equalto', False) | rejectattr('name', 'match', '^wl') | map(attribute='mac_address') | select() }}"
