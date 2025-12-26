@@ -12,6 +12,7 @@ in pkgs.mkShell {
     ]))
     pkgs.bws
     pkgs.sshpass
+    pkgs.terraform
   ];
 
   shellHook = ''

@@ -1,0 +1,53 @@
+#!/usr/bin/env ansible-playbook
+
+- name: VM Plan
+  hosts: localhost
+  gather_facts: no
+  ignore_unreachable: no
+
+  vars:
+    bitwarden_org: "{{ lookup('community.general.bitwarden_secrets_manager', '7367178d-e51d-4ae8-801f-b3bf0099322b').organizationId }}" 
+    netbox_token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
+    terraform_token: "{{ lookup('community.general.bitwarden_secrets_manager', '7367178d-e51d-4ae8-801f-b3bf0099322b').value }}" 
+
+  vars_prompt:
+    - name: vm_id
+      prompt: Which VM?
+      private: false
+
+  tasks:
+  - name: Cleanse Input
+    ansible.builtin.set_fact:
+      vm: "{{ 'vm%02d' | format(vm_id | lower | replace('vm','') | int) }}"
+  - name: Query Netbox
+    ansible.builtin.set_fact:
+      netbox_vm: "{{ query('netbox.netbox.nb_lookup', 'virtual-machines',
+                api_endpoint='https://netbox2.jk88.duckdns.org/',
+                api_filter='name=' ~vm,
+                validate_certs=false,
+                token=netbox_token) }}"
+  - name: Get VM Cluster
+    ansible.builtin.set_fact:
+      cluster: "{{ netbox_vm[0].value.cluster.name }}"
+      hypervisor: "{{ netbox_vm[0].value.device.name }}"
+      status: "{{ netbox_vm[0].value.status.value }}"
+  - name: Terraform Apply
+    community.general.terraform:
+      plan_file: "{{ playbook_dir }}/output/tfplan"
+      project_path: "{{ playbook_dir }}/../virtual-machine-lab/clusters/{{ cluster }}"
+      state: present
+      workspace: "{{ vm | upper }}"
+    environment:
+      BW_ACCESS_TOKEN: "{{ lookup('ansible.builtin.env', 'BWS_ACCESS_TOKEN') }}"
+      BW_ORGANIZATION_ID: "{{ bitwarden_org }}"
+      TF_TOKEN_app_terraform_io: "{{ terraform_token }}"
+      TF_WORKSPACE: "{{ vm | upper }}"
+  - name: Status to Staged
+    netbox.netbox.netbox_virtual_machine:
+      netbox_url: "{{ netbox_endpoint }}"
+      netbox_token: "{{ netbox_token }}"
+      validate_certs: false
+      data:
+        name: "{{ vm }}"
+        status: staged
+    when: status == "offline" or status == "planned"
