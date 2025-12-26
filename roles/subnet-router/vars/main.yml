@@ -1,0 +1,2 @@
+netbox_token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
+tailscale_token: "{{ lookup('community.general.bitwarden_secrets_manager', 'cd226fe3-db03-4896-a6fc-b3bf00b3a197').value }}"

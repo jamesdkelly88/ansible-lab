@@ -1,0 +1,27 @@
+- name: Install Tailscale
+  ansible.builtin.include_role:
+    name: tailscale
+
+- name: Get CIDR Range
+  ansible.builtin.set_fact:
+    cidr: "{{ query('netbox.netbox.nb_lookup', 'prefixes',
+              api_endpoint=netbox_endpoint,
+              api_filter='description=Home',
+              validate_certs=false,
+              token=netbox_token)[0].value.display }}"
+
+- name: Enable IP Forwarding
+  ansible.posix.sysctl:
+    name: net.ipv4.ip_forward
+    value: '1'
+    sysctl_set: true
+    sysctl_file: /etc/sysctl.d/99-tailscale.conf
+    state: present
+    reload: true
+  become: true
+  when: ansible_facts.system == "Linux"
+
+- name: Start Tailscale
+  ansible.builtin.shell: 
+    cmd: "tailscale up --advertise-routes={{ cidr }} --auth-key={{ tailscale_token }}"
+  become: true

@@ -31,5 +31,6 @@ groups:
   macports: patching == "macports"
 query_filters:
 - status: active
+- status: staged
 device_query_filters:
 - has_primary_ip: 'true'
