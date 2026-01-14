@@ -1,13 +1,17 @@
+- name: Task helper script
+  ansible.builtin.shell: 
+    cmd: curl -1sLf 'https://dl.cloudsmith.io/public/task/task/setup.deb.sh' | sudo -E bash
+  become: true
+  when: patching == 'debian'
+
 - name: Install packages
-  community.general.apk:
+  ansible.builtin.package:
     name: "{{ pkg }}"
     state: "{{ headless_role_state }}"
     update_cache: yes
   become: true
-  with_items: "{{ packages[patching] }}"
+  with_items: "{{ packages[headless_role_mode][patching] }}"
   loop_control:
     loop_var: pkg
 
-# TODO: run task install helper script
 # TODO: run lazydocker install helper script
-# TODO: run bw install script

@@ -1,0 +1,5 @@
+- name: Headless (Lite Mode)
+  ansible.builtin.include_role:
+    name: headless
+  vars:
+    headless_role_mode: lite

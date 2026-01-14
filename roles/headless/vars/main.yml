@@ -1,41 +1,61 @@
 headless_role_state: latest
+headless_role_mode: standard
 
 packages:
-  alpine:
-  - busybox-extras
-  - cmatrix
-  - curl
-  - git
-  - github-cli
-  - go
-  - go-task
-  - nano
-  - powershell
-  - tailscale
-  - tmux
-  - wget
-  debian:
-  - acpi
-  - bc
-  - btop
-  - c3270
-  - cmatrix
-  - curl
-  - fbterm
-  - fortune
-  - gh
-  - git
-  - golang
-  - golang-golang-x-tools
-  - lazygit
-  - mc
-  - ncal
-  - ncdu
-  - network-manager
-  - postgresql-client
-  - smbclient
-  - tmux
-  - unzip
-  - vlock
-  - w3m
-  - wget
+  lite:
+    alpine:
+    - git
+    - github-cli
+    - go-task
+    - nano
+    - powershell
+    - tmux
+    - wget
+    debian:
+    - curl
+    - gh
+    - git
+    - network-manager
+    - task
+    - tmux
+    - unzip
+    - wget
+  standard:
+    alpine:
+    - busybox-extras
+    - cmatrix
+    - curl
+    - git
+    - github-cli
+    - go
+    - go-task
+    - nano
+    - powershell
+    - tmux
+    - wget
+    debian:
+    - acpi
+    - bc
+    - btop
+    - c3270
+    - cmatrix
+    - curl
+    - fbterm
+    - fortune
+    - gh
+    - git
+    - golang
+    - golang-golang-x-tools
+    - lazygit
+    - mc
+    - ncal
+    - ncdu
+    - network-manager
+    - postgresql-client
+    - smbclient
+    - task
+    - tmux
+    - unzip
+    - vlock
+    - w3m
+    - wget
