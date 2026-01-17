@@ -1,0 +1,58 @@
+# TODO: check if there is an existing and working kubeconfig to skip all the install steps
+
+- name: Create output folder
+  local_action: ansible.builtin.file
+  args:
+    path: "{{ output_folder }}"
+    state: directory
+
+- name: Get cluster configuration
+  local_action: ansible.builtin.set_fact
+  args:
+    k8s_cluster: "{{ local_context_data[0].cluster }}"
+    k8s_install_disk: "{{ local_context_data[0].install_disk }}"
+    k8s_volume_disk: "{{ local_context_data[0].volume_disk }}"
+
+- name: Generate controlplane patch
+  local_action: ansible.builtin.template
+  args:
+    src: "config-patch.j2"
+    dest: "{{ output_folder }}/patch"
+
+- name: Generate config
+  local_action: ansible.builtin.shell
+  args:
+    cmd: talosctl gen config {{ k8s_cluster }} https://{{ ansible_host }}:6443 --config-patch @patch
+    chdir: "{{ output_folder }}"
+
+- name: Set talosconfig endpoint
+  local_action: ansible.builtin.shell
+  args:
+    cmd: talosctl --talosconfig talosconfig config endpoint {{ inventory_hostname }}
+    chdir: "{{ output_folder }}"
+
+- name: Apply controlplane config
+  local_action: ansible.builtin.shell
+  args:
+    cmd: talosctl apply-config --insecure --nodes {{ ansible_host }} --file controlplane.yaml
+    chdir: "{{ output_folder }}"
+
+- name: Wait
+  ansible.builtin.pause:
+    seconds: 30
+
+- name: Bootstrap cluster
+  local_action: ansible.builtin.shell
+  args:
+    cmd: talosctl --nodes {{ ansible_host }} --talosconfig talosconfig bootstrap
+    chdir: "{{ output_folder }}"
+  register: bootstrap
+  until: bootstrap.rc == 0
+  retries: 12
+  delay: 1
+
+- name: Get Kubeconfig
+  local_action: ansible.builtin.shell
+  args:
+    cmd: talosctl kubeconfig kubeconfig --talosconfig talosconfig --nodes {{ ansible_host }}
+    chdir: "{{ output_folder }}"

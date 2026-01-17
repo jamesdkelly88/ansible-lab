@@ -11,7 +11,9 @@ in pkgs.mkShell {
       python-pkgs.pytz
     ]))
     pkgs.bws
+    pkgs.kubectl
     pkgs.sshpass
+    pkgs.talosctl
     pkgs.terraform
   ];
 

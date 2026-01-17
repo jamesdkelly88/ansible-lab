@@ -1,0 +1,13 @@
+cluster:
+  allowSchedulingOnControlPlanes: true
+machine:
+  install:
+    disk: /dev/{{ k8s_install_disk }}
+  network:
+    hostname: {{ inventory_hostname }}
+  nodeLabels:
+    role: ingress-controller
+  disks:
+    - device: /dev/{{ k8s_volume_disk }}
+      partitions:
+        - mountpoint: /var/lib/extra
