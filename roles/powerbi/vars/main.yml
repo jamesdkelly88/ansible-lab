@@ -1,0 +1,5 @@
+packages:
+  - powerbi
+  - postgresql
+  - pgadmin4
+  - vscode

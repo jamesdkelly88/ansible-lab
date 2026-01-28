@@ -1,0 +1,8 @@
+- name: Install packages
+  chocolatey.chocolatey.win_chocolatey:
+    name: "{{ pkg }}"
+    state: latest
+  become: true
+  with_items: "{{ packages }}"
+  loop_control:
+    loop_var: pkg
