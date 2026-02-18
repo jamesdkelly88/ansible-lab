@@ -1,0 +1,13 @@
+- name: Ping target
+  local_action: command ping -c 1 {{ ansible_host }}
+  failed_when: false
+  changed_when: false
+  register: ping
+
+- name: Store initial_state
+  ansible.builtin.set_fact:
+   initial_state: "{{ ping.rc == 0 }}"
+
+- name: Check state
+  ansible.builtin.debug:
+    var: initial_state

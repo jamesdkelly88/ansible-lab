@@ -1,0 +1,35 @@
+#!/usr/bin/env ansible-playbook
+
+- name: Patching
+  hosts: "{{ target | lower }}"
+  serial: 1
+  gather_facts: no
+  ignore_unreachable: no
+  vars_prompt:
+    - name: target
+      prompt: Which host(s)?
+      private: false
+  tasks:
+  # hypervisor state (if virtual and when: inventory_hostname == ansible_play_hosts | first))
+  # wake hypervisor (if virtual and when: inventory_hostname == ansible_play_hosts | first))
+  - name: Patching
+    when: patching != bespoke
+    block:
+    - name: Get state
+      ansible.builtin.include_role:
+        name: initial_state
+    - name: Wake host
+      ansible.builtin.include_role:
+        name: wake
+      when: not initial_state
+    - name: Wait for host
+      ansible.builtin.include_role:
+        name: ready
+    - name: Patch host
+      ansible.builtin.include_role:
+        name: patching
+    - name: Sleep host
+      ansible.builtin.include_role:
+        name: sleep
+      when: not initial_state
+  # sleep hypervior (if virtual and woken and when: inventory_hostname == ansible_play_hosts | last)

@@ -1,0 +1,34 @@
+appendCommitMessageToRunName: false
+name: "heartbeat_$(Date:yy.MM.dd).$(rev:rr)"
+pr: none
+trigger: none
+
+schedules:
+- cron: 0 16 * * 4 # 16:00 GMT Thu
+  displayName: 16:00 GMT
+  branches:
+    include:
+    - main
+  always: true
+
+variables:
+- group: ansible
+
+pool:
+  name: default
+  demands:
+  - Agent.Name -equals $(ansible_host)
+
+
+stages:
+- stage: physical
+  displayName: Physical
+  condition: not(canceled())
+  jobs:
+  - job: wired
+    displayName: Wired
+    steps:
+    - template: /.azuredevops/steps/ansible-playbook.yml
+      parameters:
+        playbook: patching
+        arguments: -e target=wired
