@@ -4,7 +4,7 @@ patch:
   chocolatey: Y
   debian: Y
   macports: Y
-  pihole: N
+  pihole: Y
   rhel: N
   talos: N
   wsus: Y
