@@ -1,5 +1,5 @@
 appendCommitMessageToRunName: false
-name: "heartbeat_$(Date:yy.MM.dd).$(rev:rr)"
+name: "patching_$(Date:yy.MM.dd).$(rev:rr)"
 pr: none
 trigger: none
 
