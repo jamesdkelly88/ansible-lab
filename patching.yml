@@ -13,7 +13,7 @@
   # hypervisor state (if virtual and when: inventory_hostname == ansible_play_hosts | first))
   # wake hypervisor (if virtual and when: inventory_hostname == ansible_play_hosts | first))
   - name: Patching
-    when: patching is defined and patching != "bespoke"
+    when: patching is defined and not "bespoke" in platforms
     block:
     - name: Get state
       ansible.builtin.include_role:
@@ -32,4 +32,5 @@
       ansible.builtin.include_role:
         name: sleep
       when: not initial_state
+  # check vm state is offline here
   # sleep hypervior (if virtual and woken and when: inventory_hostname == ansible_play_hosts | last)
