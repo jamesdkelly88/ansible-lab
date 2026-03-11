@@ -1,0 +1,13 @@
+- name: Install cockpit
+  ansible.builtin.package:
+    name:
+    - cockpit
+    state: present
+  become: true
+
+- name: Start cockpit
+  ansible.builtin.service:
+    name: cockpit
+    enabled: true
+    state: started
+  become: true

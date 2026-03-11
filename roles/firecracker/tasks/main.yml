@@ -1,0 +1,94 @@
+- name: Create service group
+  ansible.builtin.group:
+    name: firecracker
+    system: yes
+    state: present
+  become: true
+
+- name: Create service user
+  ansible.builtin.user:
+    name: firecracker
+    group: firecracker
+    groups:
+    - kvm
+    append: yes
+    system: yes
+    shell: /usr/sbin/nologin
+    home: /opt/firecracker
+    create_home: yes
+    state: present
+  become: true
+
+- name: Check architecture
+  ansible.builtin.setup:
+    filter:
+      - 'architecture'
+  when: ansible_architecture is undefined
+
+- name: Get latest release
+  ansible.builtin.uri:
+    url: https://api.github.com/repos/firecracker-microvm/firecracker/releases/latest
+  register: github
+
+- name: Download release
+  ansible.builtin.unarchive:
+    src: "https://github.com/firecracker-microvm/firecracker/releases/download/{{ github.json.tag_name }}/firecracker-{{ github.json.tag_name }}-{{ ansible_architecture }}.tgz"
+    dest: /tmp
+    remote_src: true
+  become: true
+
+- name: Install firecracker
+  ansible.builtin.copy:
+    src: "/tmp/release-{{ github.json.tag_name }}-{{ ansible_architecture }}/firecracker-{{ github.json.tag_name }}-{{ ansible_architecture }}"
+    dest: /usr/local/bin/firecracker
+    remote_src: true
+    owner: root
+    group: root
+    mode: '0755'
+  become: true
+
+- name: Create folders
+  ansible.builtin.file:
+    path: "/opt/firecracker/{{ item }}"
+    state: directory
+    owner: firecracker
+    group: firecracker
+  become: true
+  with_items:
+  - kernel
+
+- name: Derive CI_VERSION (major.minor)
+  ansible.builtin.set_fact:
+    ci_version: "{{ github.json.tag_name | regex_replace('\\.[^.]+$', '') }}"
+
+- name: Get available kernels
+  ansible.builtin.uri:
+    url: "http://spec.ccfc.min.s3.amazonaws.com/?prefix=firecracker-ci/{{ ci_version }}/{{ ansible_architecture }}/vmlinux-&list-type=2"
+    return_content: yes
+  register: kernel_list
+
+- name: Get latest kernel
+  set_fact:
+    kernel_key: "{{ kernel_list.content | regex_findall('firecracker-ci/' + ci_version + '/' + ansible_architecture + '/vmlinux-[0-9]+\\.[0-9]+\\.[0-9]{1,3}')  | sort | last }}"
+
+- name: Download kernel
+  ansible.builtin.get_url:
+    url: "https://s3.amazonaws.com/spec.ccfc.min/{{ kernel_key }}"
+    dest: "/opt/firecracker/kernel/{{ kernel_key | split('/') | last  }}"
+    owner: firecracker
+    group: firecracker
+  become: true
+
+# TODO:
+
+# https://github.com/firecracker-microvm/firecracker/blob/main/docs/getting-started.md
+# download root filesystem
+# bridge network
+
+# vm specific #
+# vm json
+# vm service file
+# vm service
+# vm tap
+# start vm
+# connect to vm
