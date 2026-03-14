@@ -1,3 +1,9 @@
+- name: Check architecture
+  ansible.builtin.setup:
+    filter:
+      - 'architecture'
+  when: ansible_architecture is undefined
+
 - name: Create service group
   ansible.builtin.group:
     name: firecracker
@@ -19,11 +25,12 @@
     state: present
   become: true
 
-- name: Check architecture
-  ansible.builtin.setup:
-    filter:
-      - 'architecture'
-  when: ansible_architecture is undefined
+- name: Install dependencies
+  ansible.builtin.package:
+    name:
+    - bridge-utils
+    state: present
+  become: true
 
 - name: Get latest release
   ansible.builtin.uri:
@@ -47,6 +54,24 @@
     mode: '0755'
   become: true
 
+- name: Get network interfaces
+  ansible.builtin.set_fact:
+    primary_nic: "{{ interfaces | selectattr('name','eq','eth0') | map(attribute='description') | first }}"
+    secondary_nic: "{{ interfaces | selectattr('name','eq','eth1') | map(attribute='description') | first }}"
+
+- name: Configure network interfaces
+  ansible.builtin.template:
+    src: interfaces.j2
+    dest: "/etc/network/interfaces"
+  become: true
+  register: interfaces
+
+- name: Reboot
+  ansible.builtin.reboot:
+    reboot_timeout: 3600
+  become: true
+  when: interfaces.changed is true
+
 - name: Create folders
   ansible.builtin.file:
     path: "/opt/firecracker/{{ item }}"
@@ -56,6 +81,24 @@
   become: true
   with_items:
   - kernel
+  - rootfs
+  - vm
+
+- name: Get Hello World kernel
+  ansible.builtin.get_url:
+    url: "https://s3.amazonaws.com/spec.ccfc.min/img/hello/kernel/hello-vmlinux.bin"
+    dest: "/opt/firecracker/kernel/hello-vmlinux.bin"
+    owner: firecracker
+    group: firecracker
+  become: true
+
+- name: Get Hello World rootfs
+  ansible.builtin.get_url:
+    url: "https://s3.amazonaws.com/spec.ccfc.min/img/hello/fsfiles/hello-rootfs.ext4"
+    dest: "/opt/firecracker/rootfs/hello-rootfs.ext4"
+    owner: firecracker
+    group: firecracker
+  become: true
 
 - name: Derive CI_VERSION (major.minor)
   ansible.builtin.set_fact:
@@ -74,21 +117,7 @@
 - name: Download kernel
   ansible.builtin.get_url:
     url: "https://s3.amazonaws.com/spec.ccfc.min/{{ kernel_key }}"
-    dest: "/opt/firecracker/kernel/{{ kernel_key | split('/') | last  }}"
+    dest: "/opt/firecracker/kernel/{{ kernel_key | split('/') | last  }}.bin"
     owner: firecracker
     group: firecracker
   become: true
-
-# TODO:
-
-# https://github.com/firecracker-microvm/firecracker/blob/main/docs/getting-started.md
-# download root filesystem
-# bridge network
-
-# vm specific #
-# vm json
-# vm service file
-# vm service
-# vm tap
-# start vm
-# connect to vm
