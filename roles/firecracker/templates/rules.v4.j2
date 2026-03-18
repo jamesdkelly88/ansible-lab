@@ -1,0 +1,16 @@
+# iptables --insert FORWARD --in-interface br0 -j ACCEPT
+*filter
+:INPUT ACCEPT [0:0]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+-A FORWARD -i br0 -j ACCEPT
+COMMIT
+
+# iptables --table nat --append POSTROUTING --out-interface {{ secondary_nic }} -j MASQUERADE
+*nat
+:PREROUTING ACCEPT [0:0]
+:INPUT ACCEPT [0:0]
+:OUTPUT ACCEPT [0:0]
+:POSTROUTING ACCEPT [1:120]
+-A POSTROUTING -o {{ secondary_nic }} -j MASQUERADE
+COMMIT

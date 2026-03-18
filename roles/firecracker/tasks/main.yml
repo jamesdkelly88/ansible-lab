@@ -17,6 +17,7 @@
     group: firecracker
     groups:
     - kvm
+    - netdev
     append: yes
     system: yes
     shell: /usr/sbin/nologin
@@ -25,10 +26,42 @@
     state: present
   become: true
 
+- name: Create automation group
+  ansible.builtin.group:
+    name: terraform
+    system: yes
+    state: present
+  become: true
+
+- name: Create automation user
+  ansible.builtin.user:
+    name: terraform
+    group: terraform
+    groups:
+    - sudo
+    append: yes
+    system: yes
+    shell: /bin/bash
+    home: /opt/terraform
+    create_home: yes
+    state: present
+    # password: TODO - secret, hashed 
+  become: true
+
+- name: Grant terraform access
+  community.general.sudoers:
+    name: terraform
+    state: present
+    user: terraform
+    commands: ALL
+    nopassword: true
+  become: true
+
 - name: Install dependencies
   ansible.builtin.package:
     name:
     - bridge-utils
+    - iptables-persistent
     state: present
   become: true
 
@@ -66,11 +99,18 @@
   become: true
   register: interfaces
 
+- name: Configure iptables
+  ansible.builtin.template:
+    src: rules.v4.j2
+    dest: "/etc/iptables/rules.v4"
+  become: true
+  register: iptables
+
 - name: Reboot
   ansible.builtin.reboot:
     reboot_timeout: 3600
   become: true
-  when: interfaces.changed is true
+  when: interfaces.changed is true or iptables.changed is true
 
 - name: Create folders
   ansible.builtin.file:
@@ -84,40 +124,42 @@
   - rootfs
   - vm
 
-- name: Get Hello World kernel
-  ansible.builtin.get_url:
-    url: "https://s3.amazonaws.com/spec.ccfc.min/img/hello/kernel/hello-vmlinux.bin"
-    dest: "/opt/firecracker/kernel/hello-vmlinux.bin"
-    owner: firecracker
-    group: firecracker
-  become: true
+# SMB Shares
 
-- name: Get Hello World rootfs
-  ansible.builtin.get_url:
-    url: "https://s3.amazonaws.com/spec.ccfc.min/img/hello/fsfiles/hello-rootfs.ext4"
-    dest: "/opt/firecracker/rootfs/hello-rootfs.ext4"
-    owner: firecracker
-    group: firecracker
-  become: true
+# - name: Get Hello World kernel
+#   ansible.builtin.get_url:
+#     url: "https://s3.amazonaws.com/spec.ccfc.min/img/hello/kernel/hello-vmlinux.bin"
+#     dest: "/opt/firecracker/kernel/hello-vmlinux.bin"
+#     owner: firecracker
+#     group: firecracker
+#   become: true
 
-- name: Derive CI_VERSION (major.minor)
-  ansible.builtin.set_fact:
-    ci_version: "{{ github.json.tag_name | regex_replace('\\.[^.]+$', '') }}"
+# - name: Get Hello World rootfs
+#   ansible.builtin.get_url:
+#     url: "https://s3.amazonaws.com/spec.ccfc.min/img/hello/fsfiles/hello-rootfs.ext4"
+#     dest: "/opt/firecracker/rootfs/hello-rootfs.ext4"
+#     owner: firecracker
+#     group: firecracker
+#   become: true
 
-- name: Get available kernels
-  ansible.builtin.uri:
-    url: "http://spec.ccfc.min.s3.amazonaws.com/?prefix=firecracker-ci/{{ ci_version }}/{{ ansible_architecture }}/vmlinux-&list-type=2"
-    return_content: yes
-  register: kernel_list
+# - name: Derive CI_VERSION (major.minor)
+#   ansible.builtin.set_fact:
+#     ci_version: "{{ github.json.tag_name | regex_replace('\\.[^.]+$', '') }}"
 
-- name: Get latest kernel
-  set_fact:
-    kernel_key: "{{ kernel_list.content | regex_findall('firecracker-ci/' + ci_version + '/' + ansible_architecture + '/vmlinux-[0-9]+\\.[0-9]+\\.[0-9]{1,3}')  | sort | last }}"
+# - name: Get available kernels
+#   ansible.builtin.uri:
+#     url: "http://spec.ccfc.min.s3.amazonaws.com/?prefix=firecracker-ci/{{ ci_version }}/{{ ansible_architecture }}/vmlinux-&list-type=2"
+#     return_content: yes
+#   register: kernel_list
 
-- name: Download kernel
-  ansible.builtin.get_url:
-    url: "https://s3.amazonaws.com/spec.ccfc.min/{{ kernel_key }}"
-    dest: "/opt/firecracker/kernel/{{ kernel_key | split('/') | last  }}.bin"
-    owner: firecracker
-    group: firecracker
-  become: true
+# - name: Get latest kernel
+#   set_fact:
+#     kernel_key: "{{ kernel_list.content | regex_findall('firecracker-ci/' + ci_version + '/' + ansible_architecture + '/vmlinux-[0-9]+\\.[0-9]+\\.[0-9]{1,3}')  | sort | last }}"
+
+# - name: Download kernel
+#   ansible.builtin.get_url:
+#     url: "https://s3.amazonaws.com/spec.ccfc.min/{{ kernel_key }}"
+#     dest: "/opt/firecracker/kernel/{{ kernel_key | split('/') | last  }}.bin"
+#     owner: firecracker
+#     group: firecracker
+#   become: true
