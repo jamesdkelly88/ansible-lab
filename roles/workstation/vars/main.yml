@@ -2,16 +2,17 @@
 packages:
   wsus:
   - 7zip.install
+  - autohotkey
   - brave
   - caffeine
   - gh
   - git
   - go-task
   - microsoft-windows-terminal
+  - netbird
   - notepadplusplus
   - powershell-core
   - python
-  - tailscale
   - treesizefree
   - vscode
   - vscode-drawio
