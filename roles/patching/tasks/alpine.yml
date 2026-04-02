@@ -1,0 +1,9 @@
+---
+- name: APK update
+  community.general.apk:
+    state: latest
+    update_cache: yes
+    upgrade: yes
+  become: true
+
+- ansible.builtin.include_tasks: "reboot.yml"

@@ -1,6 +1,6 @@
 apply_updates: Y
 patch:
-  alpine: N
+  alpine: Y
   chocolatey: Y
   debian: Y
   macports: Y
