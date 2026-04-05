@@ -1,0 +1,6 @@
+home_dir: /opt/firecracker
+shared_dirs:
+- kernel
+- rootfs
+- vm
+svc_user: firecracker
