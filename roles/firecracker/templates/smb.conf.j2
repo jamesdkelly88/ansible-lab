@@ -14,10 +14,10 @@ passwd chat = *Enter\snew\s*\spassword:* %n\n *Retype\snew\s*\spassword:* %n\n *
 pam password change = yes
 map to guest = bad user
 usershare allow guests = yes
-{% for l in shared_dirs %}
+{% for i in shared_dirs %}
 
-[{{ l }}]
-path = {{ home_dir }}/{{ l }}
+[{{ i.name }}]
+path = {{ i.link }}
 public = yes
 guest only = yes
 writable = yes

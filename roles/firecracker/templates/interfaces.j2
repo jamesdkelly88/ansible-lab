@@ -11,10 +11,21 @@ iface {{ primary_nic }} inet dhcp
 allow-hotplug {{ secondary_nic }}
 iface {{ secondary_nic }} inet manual
 
+# Domain NIC
+allow-hotplug {{ tertiary_nic }}
+iface {{ tertiary_nic }} inet manual
+
 # Guest Bridge
 auto br0
 iface br0 inet manual
     bridge-ports {{ secondary_nic }}
+    bridge-stp off
+    bridge-fd 0
+
+# Domain Bridge
+auto br1
+iface br1 inet manual
+    bridge-ports {{ tertiary_nic }}
     bridge-stp off
     bridge-fd 0
 

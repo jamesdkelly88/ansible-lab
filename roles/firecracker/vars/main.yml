@@ -1,6 +1,12 @@
 home_dir: /opt/firecracker
 shared_dirs:
-- kernel
-- rootfs
-- vm
+- name: kernel
+  src: /mnt/hdd/kernel
+  link: "{{ home_dir }}/kernel"
+- name: rootfs
+  src: /mnt/hdd/rootfs
+  link: "{{ home_dir }}/rootfs"
+- name: vm
+  src: /mnt/ssd/vm
+  link: "{{ home_dir }}/vm"
 svc_user: firecracker

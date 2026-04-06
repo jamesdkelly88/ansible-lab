@@ -94,6 +94,7 @@
   ansible.builtin.set_fact:
     primary_nic: "{{ interfaces | selectattr('name','eq','eth0') | map(attribute='description') | first }}"
     secondary_nic: "{{ interfaces | selectattr('name','eq','eth1') | map(attribute='description') | first }}"
+    tertiary_nic: "{{ interfaces | selectattr('name','eq','eth2') | map(attribute='description') | first }}"
 
 - name: Configure network interfaces
   ansible.builtin.template:
@@ -117,8 +118,18 @@
 
 - name: Create folders
   ansible.builtin.file:
-    path: "{{ home_dir }}/{{ item }}"
+    path: "{{ item.src }}"
     state: directory
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+  become: true
+  with_items: "{{ shared_dirs }}"
+
+- name: Create links
+  ansible.builtin.file:
+    path: "{{ item.link }}"
+    src: "{{ item.src }}"
+    state: link
     owner: "{{ svc_user }}"
     group: "{{ svc_user }}"
   become: true
