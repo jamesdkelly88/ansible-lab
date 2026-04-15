@@ -1,0 +1,6 @@
+- name: Reboot and disconnect
+  ansible.builtin.shell: "sleep 5 && reboot"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  become: true

@@ -1,0 +1,4 @@
+- name: Initialise host
+  ansible.builtin.include_tasks: "{{ 'windows' if 'winssh' in group_names else 'linux' }}.yml"
+
+  

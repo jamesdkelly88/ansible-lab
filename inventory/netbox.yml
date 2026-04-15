@@ -12,6 +12,7 @@ groups:
   wired: is_virtual == False and interfaces | rejectattr('enabled', 'equalto', False) | map(attribute="name") | select('regex', '^eth') | length > 0
   wireless: is_virtual == False and interfaces | rejectattr('enabled', 'equalto', False) | map(attribute="name") | select('regex', '^wl') | length > 0
   arm_vms: is_virtual == True and cluster == "LibVirt ARM"
+  firecracker_vms: is_virtual == True and cluster == "Firecracker"
   gnome_vms: is_virtual == True and cluster == "Gnome Boxes"
   hyperv_vms: is_virtual == True and cluster == "Hyper-V"
   kubevirt_vms: is_virtual == True and cluster == "KubeVirt"

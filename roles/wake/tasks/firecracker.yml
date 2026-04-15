@@ -1,0 +1,8 @@
+- ansible.builtin.include_tasks: "virtual.yml"
+
+- name: Start Firecracker VM service
+  ansible.builtin.service:
+    name: "{{ inventory_hostname }}"
+    state: started
+  become: true
+  delegate_to: "{{ cluster_device.name }}"

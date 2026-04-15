@@ -7,6 +7,7 @@ all:
     virtual:
       children:
         arm_vms:
+        firecracker_vms:
         gnome_vms:
         hyperv_vms:
         kubevirt_vms:

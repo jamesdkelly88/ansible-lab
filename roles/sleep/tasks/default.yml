@@ -1,3 +1,3 @@
-- name: Shutdown (Linux)
+- name: Shutdown
   community.general.shutdown:
   become: true

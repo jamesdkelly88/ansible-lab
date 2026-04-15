@@ -1,0 +1,23 @@
+- name: Reboot and disconnect
+  ansible.builtin.shell: "sleep 5 && reboot"
+  async: 1
+  poll: 0
+  ignore_errors: true
+  become: true
+
+- name: Wait
+  ansible.builtin.pause:
+    seconds: 30
+
+- name: Restart
+  ansible.builtin.service:
+    name: "{{ inventory_hostname }}"
+    state: started
+  become: true
+  delegate_to: "{{ cluster_device.name }}"
+
+- name: Wait until ready
+  ansible.builtin.wait_for_connection:
+    delay: 10
+    timeout: 60
+  retries: 10

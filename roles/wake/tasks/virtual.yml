@@ -1,0 +1,30 @@
+---
+- name: Ping hypervisor
+  local_action: command ping -c 1 {{ cluster_device.name }}
+  failed_when: false
+  changed_when: false
+  register: hv_ping_result
+
+- debug:
+    var: hv_ping_result.rc
+
+- name: Wake hypervisor
+  community.general.wakeonlan:
+    mac: "{{ mac_address }}"
+  delegate_to: localhost
+  with_items: "{{ hostvars[cluster_device.name].wol_addresses }}"
+  loop_control:
+    loop_var: mac_address
+  when: hv_ping_result.rc != 0
+
+- name: Wait For hypervisor
+  ansible.builtin.wait_for:
+    host: "{{ hostvars[cluster_device.name].ansible_host }}"
+    port: "{{ hostvars[cluster_device.name].ansible_port }}"
+    timeout: 600
+  delegate_to: localhost
+
+- name: Give it a minute
+  ansible.builtin.pause:
+    seconds: 90
+  when: hv_ping_result.rc != 0

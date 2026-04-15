@@ -1,0 +1,25 @@
+- name: Update ansible password
+  ansible.builtin.user:
+    name: "{{ ansible_user }}"
+    password: "{{ new_password | password_hash('sha512') }}"
+  vars:
+    new_password: "{{ lookup('community.general.bitwarden_secrets_manager', '83643b4d-adc4-465f-a5f1-b42a008236e9').value }}"
+    ansible_password: "{{ lookup('community.general.bitwarden_secrets_manager', '102234c7-c4e9-4600-8f4c-b42a008213fe').value }}"
+    ansible_become_pass: "{{ lookup('community.general.bitwarden_secrets_manager', '102234c7-c4e9-4600-8f4c-b42a008213fe').value }}"
+  become: true
+  ignore_unreachable: true
+
+- name: Lock root user
+  ansible.builtin.command:
+    cmd: passwd -l root
+  changed_when: false
+  become: true
+
+- name: Set hostname
+  ansible.builtin.hostname:
+    name: "{{ inventory_hostname }}"
+  become: true
+  register: hostname
+
+- ansible.builtin.include_role:
+    name: reboot
