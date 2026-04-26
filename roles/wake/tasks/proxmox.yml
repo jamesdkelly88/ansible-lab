@@ -1,0 +1,24 @@
+- ansible.builtin.include_tasks: "virtual.yml"
+
+- name: Start Proxmox VM
+  community.general.proxmox_kvm:
+    api_user: "{{ proxmox_user }}"
+    api_password: "{{ proxmox_password }}"
+    api_host: "{{ cluster_device.name }}"
+    name: "{{ inventory_hostname }}"
+    node: "{{ cluster_device.name }}"
+    state: started
+    validate_certs: false
+  delegate_to: localhost
+  when: not 'lxc' in device_roles
+
+- name: Start LXC
+  community.general.proxmox:
+    vmid: "{{ (inventory_hostname | lower | replace('vm','') | int) + 100 }}"
+    api_user: "{{ proxmox_user }}"
+    api_password: "{{ proxmox_password }}"
+    api_host: "{{ cluster_device.name }}"
+    state: started
+    validate_certs: false
+  delegate_to: localhost
+  when: "'lxc' in device_roles"
