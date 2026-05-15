@@ -25,11 +25,23 @@
       state: latest
   when: st.stat.exists is false
 
-- name: Upgrade installed packages
+- name: Gather facts from chocolatey
+  win_chocolatey_facts:
+
+- name: Updates found
+  debug:
+    msg: "Packages to update: {{ ansible_chocolatey.outdated | map(attribute='package') | length }}"
+
+- name: Update outdated packages
   win_chocolatey:
-    name: all
+    name: '{{ item }}'
     state: latest
+  loop: "{{ ansible_chocolatey.outdated | map(attribute='package') }}"
+  become: true
+  ignore_errors: true
 
 - name: Clear Chocolatey cache
   ansible.windows.win_command: choco cache remove --expired
   become: true
+
+
