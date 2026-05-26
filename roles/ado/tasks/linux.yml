@@ -26,13 +26,21 @@
 
 - name: Download Azure Devops Agent (Linux)
   ansible.builtin.unarchive:
-    src: "https://download.agent.dev.azure.com/agent/{{ ado_agent_version }}/vsts-agent-linux-{{ 'arm64' if ansible_architecture == 'aarch64' else 'x64' }}-{{ ado_agent_version }}.tar.gz"
+    src: "https://download.agent.dev.azure.com/agent/{{ ado_agent_version }}/vsts-agent-linux{{ '-musl' if patching == 'alpine' else '' }}-{{ 'arm64' if ansible_architecture == 'aarch64' else 'x64' }}-{{ ado_agent_version }}.tar.gz"
     dest: "{{ ado_linux_path }}"
     group: "{{ ansible_user }}"
     owner: "{{ ansible_user }}"
     remote_src: yes
   become: true
   when: not ado_check.stat.exists
+
+- name: Install Azure Devops dependencies (Linux)
+  ansible.builtin.command:
+    argv:
+      - ./bin/installdependencies.sh
+    chdir: "{{ ado_linux_path }}"
+  become: true
+  when: not ado_check.stat.exists  
 
 - name: Install Azure Devops Agent (Linux)
   ansible.builtin.command:
@@ -50,6 +58,7 @@
       - --agent
       - "{{ inventory_hostname | lower }}"
       - --replace
+      - --acceptTeeEula
     chdir: "{{ ado_linux_path }}"
   when: not ado_check.stat.exists
 
@@ -60,7 +69,7 @@
       - install
     chdir: "{{ ado_linux_path }}"
   become: true
-  when: not ado_check.stat.exists  
+  when: not ado_check.stat.exists and patching != "alpine"
 
 - name: Start Azure Devops Agent Service (Linux)
   ansible.builtin.command:
@@ -69,4 +78,4 @@
       - start
     chdir: "{{ ado_linux_path }}"
   become: true
-  when: not ado_check.stat.exists
+  when: patching != "alpine"

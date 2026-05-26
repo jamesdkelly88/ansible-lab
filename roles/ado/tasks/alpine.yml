@@ -1,0 +1,23 @@
+- name: Install dependencies
+  ansible.builtin.package:
+    name:
+    - bash
+    - icu-libs
+    - tar
+    state: present
+  become: true
+
+- ansible.builtin.include_tasks: "linux.yml"
+
+- name: Install Azure Devops Agent Service (Alpine)
+  ansible.builtin.template:
+    src: openrc.j2
+    dest: /etc/init.d/azure-agent
+    mode: '0755'
+  become: true
+
+- name: Start Azure Devops Agent Service (Alpine)
+  ansible.builtin.service:
+    state: started
+    name: azure-agent
+  become: true

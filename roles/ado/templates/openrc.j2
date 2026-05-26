@@ -1,0 +1,19 @@
+#!/sbin/openrc-run
+
+description="Azure Pipelines Self-Hosted Agent"
+command="./bin/runsvc.sh"
+command_args=""
+command_background=true
+pidfile="/run/${RC_SVCNAME}.pid"
+supervisor="supervise-daemon"
+
+command_user="{{ ansible_user }}:{{ ansible_user }}" 
+
+depend() {
+    need net
+}
+
+start_pre()
+{
+    cd {{ ado_linux_path }}
+}

@@ -1,4 +1,4 @@
-ado_agent_version: 4.258.1
+ado_agent_version: 5.274.0
 ado_linux_path: /azuredevops
 ado_pool: default
 ado_token: "{{ lookup('community.general.bitwarden_secrets_manager', '1b183a37-a056-4874-aeab-b31f00ae7ab7').value }}"
