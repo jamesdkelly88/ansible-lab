@@ -1,0 +1,15 @@
+- name: Ensure USB folder exists
+  ansible.builtin.file:
+    path: "{{ usb_folder }}"
+    state: directory
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+  become: true
+
+- name: Mount USB
+  ansible.posix.mount:
+    path: "{{ usb_folder }}"
+    src: "LABEL={{ usb_label }}"
+    fstype: ext4
+    state: mounted
+  become: true

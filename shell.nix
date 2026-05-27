@@ -4,6 +4,8 @@ in pkgs.mkShell {
   packages = [
     pkgs.ansible
     (pkgs.python3.withPackages (python-pkgs: [
+      python-pkgs.boto3
+      python-pkgs.github3-py
       python-pkgs.jmespath
       python-pkgs.pip
       python-pkgs.proxmoxer

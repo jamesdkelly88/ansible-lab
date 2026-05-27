@@ -1,0 +1,9 @@
+seaweed_folder: /data
+seaweed_key: "{{ lookup('community.general.bitwarden_secrets_manager', '68e10816-aa77-4f58-9431-b457011d18d8').value }}"
+seaweed_secret: "{{ lookup('community.general.bitwarden_secrets_manager', 'fb101f86-5a5d-4fd2-8667-b457011d2a58').value }}"
+svc_user: seaweedfs
+home_dir: /opt/seaweedfs
+tape_count: 4
+tape_folder: /mnt/tape
+usb_folder: /mnt/rescue
+usb_label: rescue

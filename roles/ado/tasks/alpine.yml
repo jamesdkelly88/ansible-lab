@@ -19,5 +19,6 @@
 - name: Start Azure Devops Agent Service (Alpine)
   ansible.builtin.service:
     state: started
+    enabled: true
     name: azure-agent
   become: true

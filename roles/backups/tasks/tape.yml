@@ -1,0 +1,27 @@
+- name: Ensure Tape folder exists
+  ansible.builtin.file:
+    path: "{{ tape_folder }}/{{ item }}"
+    state: directory
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+  become: true
+  with_sequence: "count={{ tape_count }}"
+
+- name: Mount Tape
+  ansible.posix.mount:
+    path: "{{ tape_folder }}/{{ item }}"
+    src: "LABEL=tape{{ item }}"
+    fstype: ext4
+    state: mounted
+    opts: nofail
+  become: true
+  with_sequence: "count={{ tape_count }}"
+
+- name: Get current tape
+  ansible.builtin.shell: cat /proc/mounts | grep /mnt/tape/ | awk '{ print $2 }'
+  register: current_tape
+  changed_when: false
+
+- name: Current tape
+  ansible.builtin.debug:
+    msg: "{{ current_tape.stdout }}"

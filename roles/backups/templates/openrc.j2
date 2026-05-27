@@ -1,0 +1,15 @@
+#!/sbin/openrc-run
+supervisor=supervise-daemon
+
+name=seaweedfs
+command="/usr/bin/weed"
+command_args="${WEED_EXEC} ${WEED_OPTS}"
+command_user="{{ svc_user }}:{{ svc_user }}" 
+
+pidfile="/run/$name.pid"
+respawn_delay=5
+
+depend() {
+        need net
+        after firewall
+}

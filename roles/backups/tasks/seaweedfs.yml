@@ -1,0 +1,76 @@
+- name: Create service group
+  ansible.builtin.group:
+    name: "{{ svc_user }}"
+    system: yes
+    state: present
+  become: true
+
+- name: Create service user
+  ansible.builtin.user:
+    name: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+    append: yes
+    system: yes
+    shell: /usr/sbin/nologin
+    home: "{{ home_dir }}"
+    create_home: yes
+    state: present
+  become: true
+
+- name: Ensure SeaweedFS folder exists
+  ansible.builtin.file:
+    path: "{{ seaweed_folder }}"
+    state: directory
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+  become: true
+
+# mount seaweed volume
+
+- name: Add Testing repository
+  ansible.builtin.lineinfile:
+    path: /etc/apk/repositories
+    line: "@testing https://dl-cdn.alpinelinux.org/alpine/edge/testing"
+  become: true
+
+- name: Install packages
+  community.general.apk:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  become: true
+  with_items:
+  - seaweedfs@testing
+
+- name: Install SeaweedFS service
+  ansible.builtin.template:
+    src: openrc.j2
+    dest: /etc/init.d/seaweedfs
+    mode: '0755'
+  become: true
+  register: seaweed_svc
+
+- name: Configure SeaweedFS
+  ansible.builtin.template:
+    src: conf.j2
+    dest: /etc/conf.d/seaweedfs
+    mode: '0644'
+  become: true
+  register: seaweed_conf
+
+- name: Configure SeaweedFS access
+  ansible.builtin.template:
+    src: s3.j2
+    dest: "{{ home_dir }}/s3_config.json"
+    mode: '0600'
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+  become: true
+  register: seaweed_s3
+
+- name: Launch SeaweedFS
+  ansible.builtin.service:
+    state:  "{{ 'restarted' if seaweed_svc.changed or seaweed_conf.changed or seaweed_s3.changed else 'started' }}"
+    enabled: true
+    name: seaweedfs
+  become: true

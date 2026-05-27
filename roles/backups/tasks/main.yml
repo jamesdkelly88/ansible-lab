@@ -1,0 +1,12 @@
+- name: Seaweed
+  ansible.builtin.include_tasks: seaweedfs.yml
+# - name: USB
+#   ansible.builtin.include_tasks: usb.yml
+# - name: Tape
+#   ansible.builtin.include_tasks: tape.yml
+# - name: pCloud
+#   ansible.builtin.include_tasks: pcloud.yml
+# - name: S3
+#   ansible.builtin.include_tasks: s3.yml
+
+  
