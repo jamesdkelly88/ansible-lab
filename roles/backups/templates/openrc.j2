@@ -1,13 +1,12 @@
 #!/sbin/openrc-run
-supervisor=supervise-daemon
 
-name=seaweedfs
-command="/usr/bin/weed"
-command_args="${WEED_EXEC} ${WEED_OPTS}"
+name=rustfs
+command="/usr/local/bin/rustfs"
 command_user="{{ svc_user }}:{{ svc_user }}" 
+command_args="--access-key-file {{ home_dir }}/userid --secret-key-file {{ home_dir }}/secret {{ data_folder }}" 
 
 pidfile="/run/$name.pid"
-respawn_delay=5
+command_background="yes"
 
 depend() {
         need net

@@ -1,0 +1,16 @@
+- name: Ensure data folder exists
+  ansible.builtin.file:
+    path: "{{ data_folder }}"
+    state: directory
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+    mode: "u+rwX"
+    recurse: true
+  become: true
+- name: Mount data volume
+  ansible.posix.mount:
+    path: "{{ data_folder }}"
+    src: "LABEL={{ ssd_label }}"
+    fstype: xfs
+    state: mounted
+  become: true

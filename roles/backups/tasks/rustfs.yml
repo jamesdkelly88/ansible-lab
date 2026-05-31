@@ -1,0 +1,64 @@
+# https://www.bitnesia.com/en/how-to-install-rustfs-s3-compatible
+
+- name: Install packages
+  community.general.apk:
+    name: "{{ item }}"
+    state: latest
+    update_cache: yes
+  become: true
+  with_items:
+  - unzip
+
+- name: Download Rustfs
+  ansible.builtin.unarchive:
+    src: https://dl.rustfs.com/artifacts/rustfs/release/rustfs-linux-x86_64-musl-latest.zip
+    dest: /usr/local/bin
+    group: root
+    owner: root
+    mode: '0755'
+    remote_src: yes
+    creates: /usr/local/bin/rustfs
+  become: true
+
+- name: Create logs folder
+  ansible.builtin.file:
+    path: "{{ log_folder }}"
+    state: directory
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+  become: true
+
+- name: Deploy RustFS username
+  ansible.builtin.copy:
+    content: "{{ s3_key }}"
+    dest: "{{ home_dir }}/userid"
+    mode: '0600'
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+  become: true
+  register: rustfs_key
+
+- name: Deploy RustFS secret
+  ansible.builtin.copy:
+    content: "{{ s3_secret }}"
+    dest: "{{ home_dir }}/secret"
+    mode: '0600'
+    owner: "{{ svc_user }}"
+    group: "{{ svc_user }}"
+  become: true
+  register: rustfs_secret
+
+- name: Install RustFS service
+  ansible.builtin.template:
+    src: openrc.j2
+    dest: /etc/init.d/rustfs
+    mode: '0755'
+  become: true
+  register: rustfs_svc
+
+- name: Launch RustFS
+  ansible.builtin.service:
+    state:  "{{ 'restarted' if rustfs_svc.changed or rustfs_key.changed or rustfs_secret.changed else 'started' }}"
+    enabled: true
+    name: rustfs
+  become: true

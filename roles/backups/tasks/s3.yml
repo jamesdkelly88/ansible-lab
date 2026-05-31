@@ -1,9 +1,9 @@
 - name: Create backups bucket
   local_action:
     module: amazon.aws.s3_bucket
-    access_key: "{{ seaweed_key }}"
+    access_key: "{{ s3_key }}"
     endpoint_url: "http://{{ inventory_hostname }}:9000"
     name: backups
-    region: eu-west-2
-    secret_key: "{{ seaweed_secret }}"
+    region: eu-west-1
+    secret_key: "{{ s3_secret }}"
     state: present

@@ -1,12 +1,28 @@
-- name: Seaweed
-  ansible.builtin.include_tasks: seaweedfs.yml
-# - name: USB
-#   ansible.builtin.include_tasks: usb.yml
-# - name: Tape
-#   ansible.builtin.include_tasks: tape.yml
-# - name: pCloud
-#   ansible.builtin.include_tasks: pcloud.yml
-# - name: S3
-#   ansible.builtin.include_tasks: s3.yml
+# Manual setup steps (before running role)
+
+# sudo apk add xfsprogs-extra                                      install packages
+# sudo fdisk -l                                                    list devices
+# sudo fdisk /dev/sdb                                              format device
+# p                                                                show partition table
+# o                                                                create new partition table
+# n,p,1,defaults                                                   create new partition
+# w                                                                write changes and exit
+# sudo mkfs.xfs -i size=512 -n ftype=1 -L data /dev/sdb1           create xfs partition
+# sudo xfs_admin -u /dev/sdb1                                      verify xfs partition
+
+- name: User
+  ansible.builtin.include_tasks: user.yml
+- name: SSD
+  ansible.builtin.include_tasks: ssd.yml
+- name: USB
+  ansible.builtin.include_tasks: usb.yml
+- name: Tape
+  ansible.builtin.include_tasks: tape.yml
+# - name: NAS
+#   ansible.builtin.include_tasks: nas.yml
+- name: RustFS
+  ansible.builtin.include_tasks: rustfs.yml
+- name: S3
+  ansible.builtin.include_tasks: s3.yml
 
   
