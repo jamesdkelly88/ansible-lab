@@ -1,0 +1,3 @@
+service_user: debian-transmission
+storage_path: /usb
+storage_label: seagate

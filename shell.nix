@@ -12,6 +12,7 @@ in pkgs.mkShell {
       python-pkgs.pynetbox
       python-pkgs.pytz
     ]))
+    pkgs.awscli2
     pkgs.bws
     pkgs.kubectl
     pkgs.sshpass

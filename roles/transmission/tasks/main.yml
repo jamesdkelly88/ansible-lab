@@ -1,0 +1,63 @@
+- name: Install packages
+  ansible.builtin.package:
+    name:
+    - samba
+    - transmission-daemon
+    state: latest
+  become: true
+
+- name: Storage folders
+  ansible.builtin.file:
+    path: "{{ item }}"
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: "0777"
+    state: directory
+  become: true
+  with_items:
+  - "{{ storage_path }}/downloads"
+  - "{{ storage_path }}/incomplete"
+
+- name: Mount storage
+  ansible.posix.mount:
+    path: "{{ storage_path }}"
+    src: "LABEL={{ storage_label }}"
+    fstype: ext4
+    state: mounted
+  become: true
+
+- name: SMB config
+  ansible.builtin.template:
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+    mode: '0644'
+  become: true
+  register: update_smb
+
+- name: SMB Service
+  ansible.builtin.service:
+    state: restarted
+    name: samba
+  become: true
+  when: update_smb.changed is true
+
+- name: Stop Transmission service
+  ansible.builtin.service:
+    state: stopped
+    name: transmission-daemon
+  become: true
+
+- name: Transmission settings
+  ansible.builtin.copy:
+    src: settings.json
+    dest: /etc/transmission-daemon/settings.json
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: '0600'
+  become: true
+
+- name: Start Transmission service
+  ansible.builtin.service:
+    state: started
+    name: transmission-daemon
+  become: true
