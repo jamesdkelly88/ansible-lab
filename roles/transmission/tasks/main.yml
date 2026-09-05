@@ -49,7 +49,7 @@
 - name: SMB Service
   ansible.builtin.service:
     state: restarted
-    name: samba
+    name: smbd
   become: true
   when: update_smb.changed is true
 
