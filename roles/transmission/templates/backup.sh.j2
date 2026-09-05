@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -e
+
+export AWS_ACCESS_KEY_ID={{ minio_user }}
+export AWS_SECRET_ACCESS_KEY={{ minio_password }}
+export AWS_DEFAULT_REGION=us-east-1
+
+# stop service
+systemctl stop transmission-daemon
+# create backup
+tar -cvzf /tmp/transmission_backup.tar.gz -C /var/lib/transmission-daemon/.config transmission-daemon
+# start service
+systemctl start transmission-daemon
+# copy to backup server
+aws s3 --endpoint http://ns02:9000 cp "/tmp/transmission_backup.tar.gz" "s3://backups/$(hostname)/$(date -I)/transmission.tar.gz"
+aws s3 --endpoint http://ns02:9000 cp "/etc/transmission-daemon/settings.json" "s3://backups/$(hostname)/$(date -I)/transmission.settings.json"

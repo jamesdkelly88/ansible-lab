@@ -1,9 +1,29 @@
 - name: Install packages
   ansible.builtin.package:
     name:
+    - awscli
     - samba
+    - tar
     - transmission-daemon
     state: latest
+  become: true
+
+- name: Mount point 
+  ansible.builtin.file:
+    path: "{{ storage_path }}"
+    owner: "{{ service_user }}"
+    group: "{{ service_user }}"
+    mode: "0777"
+    state: directory
+  become: true
+
+- name: Mount storage
+  ansible.posix.mount:
+    path: "{{ storage_path }}"
+    src: "LABEL={{ storage_label }}"
+    fstype: ext4
+    opts: "defaults,nofail"
+    state: mounted
   become: true
 
 - name: Storage folders
@@ -17,14 +37,6 @@
   with_items:
   - "{{ storage_path }}/downloads"
   - "{{ storage_path }}/incomplete"
-
-- name: Mount storage
-  ansible.posix.mount:
-    path: "{{ storage_path }}"
-    src: "LABEL={{ storage_label }}"
-    fstype: ext4
-    state: mounted
-  become: true
 
 - name: SMB config
   ansible.builtin.template:
@@ -60,4 +72,24 @@
   ansible.builtin.service:
     state: started
     name: transmission-daemon
+  become: true
+
+- name: Backup script
+  ansible.builtin.template:
+    src: backup.sh.j2
+    dest: "{{ storage_path }}/backup.sh"
+    owner: root
+    group: root
+    mode: '0744'
+  become: true
+
+
+- name: Backup job      
+  ansible.builtin.cron:
+    name: backup-transmission
+    minute: 20
+    hour: 21
+    weekday: SUN
+    job: "{{ storage_path }}/backup.sh"
+    user: root
   become: true
