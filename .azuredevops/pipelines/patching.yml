@@ -27,6 +27,7 @@ stages:
   jobs:
   - job: wired
     displayName: Wired
+    timeoutInMinutes: 300
     steps:
     - template: /.azuredevops/steps/ansible-playbook.yml
       parameters:
