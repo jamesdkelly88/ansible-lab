@@ -1,0 +1,15 @@
+---
+- name: Check Flatpak installed
+  ansible.builtin.command:
+    cmd: which flatpak
+  register: flatpak_binary
+  changed_when: false
+  ignore_errors: true
+
+- name: Update Flatpaks
+  ansible.builtin.command:
+    cmd: flatpak update -y --noninteractive
+  register: flatpak_update
+  changed_when: "'Nothing to do' not in flatpak_update.stdout"
+  become: true
+  when: flatpak_binary.rc == 0

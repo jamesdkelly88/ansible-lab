@@ -6,4 +6,6 @@
     upgrade: yes
   become: true
 
+- ansible.builtin.include_tasks: "flatpak.yml"
+- ansible.builtin.include_tasks: "snap.yml"
 - ansible.builtin.include_tasks: "reboot.yml"

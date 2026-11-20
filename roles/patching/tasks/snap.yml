@@ -1,0 +1,14 @@
+---
+- name: Check Snap installed
+  ansible.builtin.command:
+    cmd: which snap
+  register: snap_binary
+  changed_when: false
+  ignore_errors: true
+
+- name: Update Snaps
+  ansible.builtin.command:
+    cmd: snap refresh
+  changed_when: true
+  become: true
+  when: snap_binary.rc == 0
