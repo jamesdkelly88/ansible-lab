@@ -8,6 +8,8 @@ group_names_raw: true
 interfaces: true
 validate_certs: false
 virtual_disks: true
+compose:
+  patching: config_context[0].patching
 groups:
 # host type
   wired: is_virtual == False and interfaces | rejectattr('enabled', 'equalto', False) | map(attribute="name") | select('regex', '^eth') | length > 0
