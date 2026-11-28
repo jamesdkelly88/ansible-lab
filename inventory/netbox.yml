@@ -2,6 +2,7 @@ plugin: netbox.netbox.nb_inventory
 # api_endpoint: http://localhost:8080
 api_endpoint: https://netbox2.jk88.duckdns.org
 token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
+config_context: true
 flatten_custom_fields: true
 group_names_raw: true
 interfaces: true
