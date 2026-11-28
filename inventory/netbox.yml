@@ -3,13 +3,12 @@ plugin: netbox.netbox.nb_inventory
 api_endpoint: https://netbox2.jk88.duckdns.org
 token: "{{ lookup('community.general.bitwarden_secrets_manager', '18b5879e-acf6-4c4b-8e12-b31c007cac94').value }}"
 config_context: true
+flatten_config_context: true
 flatten_custom_fields: true
 group_names_raw: true
 interfaces: true
 validate_certs: false
 virtual_disks: true
-compose:
-  patching: config_context[0].patching
 groups:
 # host type
   wired: is_virtual == False and interfaces | rejectattr('enabled', 'equalto', False) | map(attribute="name") | select('regex', '^eth') | length > 0
